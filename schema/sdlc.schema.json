@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/YevhenMalyi/klein-sdlc/schema/sdlc.schema.json",
+  "title": "klein-sdlc project manifest",
+  "description": "Every project-specific name the klein-sdlc skills use, once. Lives at .claude/sdlc.json in the host repo; skills inject it at load time and name a value by its path.",
+  "type": "object",
+  "required": ["tracker", "forge", "gates", "commits", "docs", "review"],
+  "properties": {
+    "$comment": { "type": "string" },
+    "tracker": {
+      "type": "object",
+      "required": ["kind", "team", "project", "issuePrefix", "states", "typeLabels", "areaLabelPrefix", "docs"],
+      "properties": {
+        "kind": { "const": "linear", "description": "Only Linear is implemented today." },
+        "team": { "type": "string" },
+        "project": { "type": "string", "description": "The open build project the board skills read." },
+        "issuePrefix": { "type": "string", "pattern": "^[A-Z][A-Z0-9]*$" },
+        "states": {
+          "type": "object",
+          "required": ["backlog", "todo", "inProgress", "inReview", "done"],
+          "properties": {
+            "backlog": { "type": "string" },
+            "todo": { "type": "string" },
+            "inProgress": { "type": "string" },
+            "inReview": { "type": "string" },
+            "done": { "type": "string" }
+          }
+        },
+        "typeLabels": {
+          "type": "object",
+          "required": ["story", "task", "bug", "chore", "spike"],
+          "properties": {
+            "story": { "type": "string" },
+            "task": { "type": "string" },
+            "bug": { "type": "string" },
+            "chore": { "type": "string" },
+            "spike": { "type": "string" }
+          }
+        },
+        "areaLabelPrefix": { "type": "string" },
+        "deferLabel": { "type": "string" },
+        "docs": {
+          "type": "object",
+          "required": ["conventions", "specTemplate"],
+          "properties": {
+            "conventions": { "type": "string", "format": "uri", "description": "The 'how we track work' document." },
+            "specTemplate": { "type": "string", "description": "Title of the tracker document template a spec is shaped by." },
+            "aiInfrastructure": { "type": "string", "format": "uri" }
+          }
+        }
+      }
+    },
+    "forge": {
+      "type": "object",
+      "required": ["kind", "owner", "repo", "baseBranch", "issueBranch", "noIssueBranch", "noIssueTag", "pushVia", "scopeLabels"],
+      "properties": {
+        "kind": { "const": "github" },
+        "owner": { "type": "string" },
+        "repo": { "type": "string" },
+        "baseBranch": { "type": "string" },
+        "issueBranch": { "type": "string", "description": "Pattern with <n> and <kebab-description> placeholders." },
+        "noIssueBranch": { "type": "string" },
+        "noIssueTag": { "type": "string" },
+        "pushVia": { "enum": ["local-git", "mcp"] },
+        "pushViaNote": { "type": "string" },
+        "scopeLabels": {
+          "type": "object",
+          "description": "PR label -> path prefixes that earn it.",
+          "additionalProperties": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "gates": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" },
+      "description": "Verification commands, run in order, each to completion, before any commit."
+    },
+    "gatesNote": { "type": "string" },
+    "commits": {
+      "type": "object",
+      "required": ["scopes"],
+      "properties": {
+        "scopes": {
+          "type": "object",
+          "description": "Conventional-commit scope -> what it covers.",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "docs": {
+      "type": "object",
+      "required": ["rules", "practices", "reviewCatalogues"],
+      "properties": {
+        "permissions": { "type": "string" },
+        "structure": { "type": "string" },
+        "rules": { "type": "string" },
+        "practices": { "type": "string" },
+        "reviewCatalogues": { "type": "string", "description": "Directory holding one <lane>.md per review lane." },
+        "qa": { "type": "string", "description": "The QA catalogue manual-qa-engineer reads first: apps, ports, sign-in per role, blocked-not-defect failures, seeded data. Shape: templates/qa-catalogue.md." },
+        "uxHouseRules": { "type": "string", "description": "Part 2 of the UX standard: the product's audiences and the rules that take sides for each. Shape: templates/ux-house-rules.md." }
+      }
+    },
+    "review": {
+      "type": "object",
+      "required": ["lanes"],
+      "properties": {
+        "lanes": {
+          "type": "object",
+          "description": "Path prefixes that make a conditional lane run. Security's trigger list lives in its catalogue.",
+          "properties": {
+            "correctness": { "type": "array", "items": { "type": "string" } },
+            "frontendPractices": { "type": "array", "items": { "type": "string" } },
+            "backendPractices": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    }
+  }
+}

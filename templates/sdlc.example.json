@@ -1,0 +1,77 @@
+{
+  "$schema": "https://github.com/YevhenMalyi/klein-sdlc/schema/sdlc.schema.json",
+  "$comment": "Example manifest. Copy to .claude/sdlc.json and replace every value; the names below are placeholders, not defaults.",
+  "tracker": {
+    "kind": "linear",
+    "team": "Example Team",
+    "project": "Build 1",
+    "issuePrefix": "EX",
+    "states": {
+      "backlog": "Backlog",
+      "todo": "Todo",
+      "inProgress": "In Progress",
+      "inReview": "In Review",
+      "done": "Done"
+    },
+    "typeLabels": {
+      "story": "Story",
+      "task": "Task",
+      "bug": "Bug",
+      "chore": "Chore",
+      "spike": "Spike"
+    },
+    "areaLabelPrefix": "area/",
+    "deferLabel": "decide later",
+    "docs": {
+      "conventions": "https://linear.app/example/document/how-we-track-work",
+      "specTemplate": "Spec template",
+      "aiInfrastructure": "https://linear.app/example/document/ai-infrastructure"
+    }
+  },
+  "forge": {
+    "kind": "github",
+    "owner": "example-org",
+    "repo": "example-app",
+    "baseBranch": "main",
+    "issueBranch": "ex-<n>-<kebab-description>",
+    "noIssueBranch": "<kebab-description>",
+    "noIssueTag": "[NO-ISSUE]",
+    "pushVia": "local-git",
+    "pushViaNote": "The MCP token cannot create refs; open and label the PR through the MCP, push with git.",
+    "scopeLabels": {
+      "web": ["apps/web/"],
+      "api": ["apps/api/"],
+      "packages": ["packages/"],
+      "tooling": ["tooling/", ".github/", ".claude/", "package.json"]
+    }
+  },
+  "gates": ["npm run format:check", "npm run lint", "npm run typecheck", "npm test"],
+  "gatesNote": "Repo-wide and sequential. lint uses --max-warnings=0; test enforces the coverage threshold.",
+  "commits": {
+    "scopes": {
+      "web": "apps/web",
+      "api": "apps/api",
+      "domain": "packages/domain",
+      "tooling": "tooling/*, root config",
+      "rules": ".claude/rules/, .claude/docs/",
+      "db": "migrations, schema",
+      "deps": "dependency bumps (pair with chore)"
+    }
+  },
+  "docs": {
+    "permissions": ".claude/docs/roles-and-permissions.md",
+    "structure": ".claude/docs/structure.md",
+    "rules": ".claude/docs/rules/README.md",
+    "practices": ".claude/docs/practices/README.md",
+    "reviewCatalogues": ".claude/docs/review",
+    "qa": ".claude/docs/qa.md",
+    "uxHouseRules": ".claude/docs/ux-house-rules.md"
+  },
+  "review": {
+    "lanes": {
+      "correctness": ["apps/", "packages/"],
+      "frontendPractices": ["apps/web/"],
+      "backendPractices": ["apps/api/"]
+    }
+  }
+}

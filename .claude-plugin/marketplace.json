@@ -1,0 +1,11 @@
+{
+  "name": "klein-sdlc",
+  "owner": { "name": "Yevhen Malyi" },
+  "plugins": [
+    {
+      "name": "klein-sdlc",
+      "source": "./",
+      "description": "Spec, plan, implement, commit, and a verified multi-lane review for a Claude Code project."
+    }
+  ]
+}

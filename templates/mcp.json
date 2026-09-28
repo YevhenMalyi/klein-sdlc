@@ -1,0 +1,22 @@
+{
+  "$comment": "Copy to .mcp.json in the host repo. The klein-sdlc skills and agents call these servers by these exact names — linear, github, playwright — so the names are not a preference. Linear authenticates in-session via /mcp. GitHub needs GITHUB_PERSONAL_ACCESS_TOKEN in the environment and the github-mcp-server binary on PATH; the remote variant at https://api.githubcopilot.com/mcp/ with a bearer header works too.",
+  "mcpServers": {
+    "linear": {
+      "type": "http",
+      "url": "https://mcp.linear.app/mcp"
+    },
+    "github": {
+      "type": "stdio",
+      "command": "github-mcp-server",
+      "args": ["stdio"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
+    }
+  }
+}
