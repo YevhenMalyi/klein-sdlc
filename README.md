@@ -123,6 +123,20 @@ billed per token, so they stay local by design. Run the trigger tier after editi
 skill's description, and the scenario tier after touching `full-review`, a lane, the
 verifier or `REVIEW.md`. A single failing grader fails the run.
 
+## Releasing a change
+
+An installed copy stays at the version in `.claude-plugin/plugin.json` until that number
+changes; `claude plugin update` reports "already at the latest version" otherwise, whatever
+`main` holds. So every change that should reach a host ends with a version bump in the same
+PR, and hosts pick it up with:
+
+```bash
+claude plugin update klein-sdlc@klein-sdlc
+```
+
+Patch for a fix inside a skill or agent, minor for a new skill, agent, manifest field or
+template, major when a host must change its manifest or catalogues to keep working.
+
 ## Adopting it in a new repo
 
 Not automated yet. By hand, from `templates/`:
