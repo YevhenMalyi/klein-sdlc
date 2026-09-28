@@ -1,0 +1,16 @@
+{
+  "name": "klein-sdlc",
+  "private": true,
+  "type": "module",
+  "description": "Test and validation harness for the klein-sdlc Claude Code plugin. The plugin itself needs no install step.",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "test:schema": "ajv validate --spec=draft2020 -c ajv-formats -s schema/sdlc.schema.json -d templates/sdlc.example.json -d evals/scenario-full-review/fixture/.claude/sdlc.json",
+    "eval:trigger": "claude plugin eval . --tag trigger --runs 1 --ablation none --trust-plugin --no-publish -j 4",
+    "eval:scenario": "claude plugin eval . --tag scenario --runs 1 --ablation none --trust-plugin --no-publish --scaffold --allow-tools Bash Write Edit Agent --max-cost-usd 15"
+  },
+  "devDependencies": {
+    "ajv-cli": "^5.0.0",
+    "ajv-formats": "^3.0.0"
+  }
+}

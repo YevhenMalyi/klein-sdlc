@@ -103,6 +103,26 @@ claude plugin install klein-sdlc@klein-sdlc
 Skills are namespaced: `/klein-sdlc:whats-next`, `/klein-sdlc:full-review`. Agents likewise:
 `klein-sdlc:security-reviewer`.
 
+## Evals and tests
+
+Three tiers, cheapest first. `npm install` once for the two free ones.
+
+| Tier | Command | What it proves | Cost |
+| :--- | :--- | :--- | :--- |
+| Scripts and schema | `npm test` and `npm run test:schema` | The board scripts fail loudly without a manifest or a key; every manifest we ship validates against `schema/sdlc.schema.json` | free |
+| Trigger | `npm run eval:trigger` | Each skill fires on a natural prompt for it, no other skill steals the prompt, and three non-workflow prompts fire nothing. One run per case, no baseline arm | about $1 |
+| Scenario | `npm run eval:scenario` | `full-review` on a fixture host with two planted defects: the correctness lane and the verifier are spawned by name, both defects are reported as `(blocking)`, and the report accounts for verification | about $1–2 |
+
+Cases live under `evals/`, one directory each: `prompt.md` plus `graders/`, and for the
+scenario a `case.yaml`, a `scaffold.sh` that builds the fixture repo in the run directory,
+and the fixture itself under `fixture/`. Results land in `evals/results/`, which is ignored.
+
+CI runs the free tier only. The eval tiers spawn real Claude sessions: locally they run
+on your subscription through your own login, but in CI the runner accepts only an API key,
+billed per token, so they stay local by design. Run the trigger tier after editing any
+skill's description, and the scenario tier after touching `full-review`, a lane, the
+verifier or `REVIEW.md`. A single failing grader fails the run.
+
 ## Adopting it in a new repo
 
 Not automated yet. By hand, from `templates/`:
