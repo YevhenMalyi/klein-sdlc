@@ -16,7 +16,17 @@ import { promisify } from "node:util";
 
 const run = promisify(execFile);
 
-const manifest = JSON.parse(readFileSync(resolve(process.cwd(), ".claude/sdlc.json"), "utf8"));
+const manifestPath = resolve(process.cwd(), ".claude/sdlc.json");
+let manifest;
+try {
+  manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+} catch (error) {
+  console.error(
+    `Cannot read the project manifest at ${manifestPath}: ${error.message}\n` +
+      "Run this from the host repository root; the klein-sdlc README says what the file holds.",
+  );
+  process.exit(1);
+}
 const projectName = process.argv.slice(2).join(" ").trim() || manifest.tracker.project;
 
 const apiKey = process.env.LINEAR_API_KEY;
