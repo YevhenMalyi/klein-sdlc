@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: "Also run the scenario tier (spawns real review lanes; costs a few dollars)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Free: the script tests and the manifest schema against every manifest we ship.
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run test:schema
+
+  # Cheap: one run per trigger case, no baseline arm. Catches a description edit that stops
+  # a skill firing, or one skill stealing another's prompts. Needs ANTHROPIC_API_KEY; the
+  # eval runner does not accept a subscription token in CI.
+  evals-trigger:
+    needs: verify
+    runs-on: ubuntu-latest
+    if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install -g @anthropic-ai/claude-code
+      - run: >
+          claude plugin eval . --tag trigger --runs 1 --ablation none --trust-plugin
+          --no-publish -j 4 --threshold 1 --max-cost-usd 5 --json trigger-results.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-trigger
+          path: |
+            trigger-results.json
+            evals/results/
+
+  # Expensive: the full-review scenario spawns the lanes and the verifier for real. Manual.
+  evals-scenario:
+    needs: verify
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.scenario && secrets.ANTHROPIC_API_KEY != '' }}
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install -g @anthropic-ai/claude-code
+      - run: >
+          claude plugin eval . --tag scenario --runs 1 --ablation none --trust-plugin
+          --no-publish --scaffold --allow-tools Bash Write Edit Agent
+          --threshold 1 --max-cost-usd 15 --json scenario-results.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-scenario
+          path: |
+            scenario-results.json
+            evals/results/
