@@ -49,6 +49,10 @@ Make one directory for the run and keep everything in it:
 RUN=$(mktemp -d)   # or the session scratchpad, if this session has one
 ```
 
+**Never inside the repository.** A run directory under the working tree shows up as
+untracked files, lands in the next `git status` the lanes read, and can be swept into a
+commit. `mktemp -d` and the scratchpad are both outside it; nothing else is acceptable.
+
 - **No target named** → the working tree against the merge base:
   `git diff <forge.baseBranch>...HEAD` plus `git diff HEAD` for anything uncommitted. If both are empty, say so and stop — don't
   invent a diff, and don't spawn anything.
