@@ -117,9 +117,11 @@ Cases live under `evals/`, one directory each: `prompt.md` plus `graders/`, and 
 scenario a `case.yaml`, a `scaffold.sh` that builds the fixture repo in the run directory,
 and the fixture itself under `fixture/`. Results land in `evals/results/`, which is ignored.
 
-CI runs the free tier and the trigger tier on every push (the latter needs an
-`ANTHROPIC_API_KEY` secret; the eval runner does not take a subscription token there) and
-the scenario tier on manual dispatch. `--threshold 1`: a single failing grader fails the job.
+CI runs the free tier only. The eval tiers spawn real Claude sessions: locally they run
+on your subscription through your own login, but in CI the runner accepts only an API key,
+billed per token, so they stay local by design. Run the trigger tier after editing any
+skill's description, and the scenario tier after touching `full-review`, a lane, the
+verifier or `REVIEW.md`. A single failing grader fails the run.
 
 ## Adopting it in a new repo
 
