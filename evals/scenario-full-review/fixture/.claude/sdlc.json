@@ -1,0 +1,67 @@
+{
+  "tracker": {
+    "kind": "linear",
+    "team": "Fixture",
+    "project": "Fixture Build",
+    "issuePrefix": "FX",
+    "states": {
+      "backlog": "Backlog",
+      "todo": "Todo",
+      "inProgress": "In Progress",
+      "inReview": "In Review",
+      "done": "Done"
+    },
+    "typeLabels": {
+      "story": "Story",
+      "task": "Task",
+      "bug": "Bug",
+      "chore": "Chore",
+      "spike": "Spike"
+    },
+    "areaLabelPrefix": "area/",
+    "docs": {
+      "conventions": "https://example.invalid/conventions",
+      "specTemplate": "Spec template"
+    }
+  },
+  "forge": {
+    "kind": "github",
+    "owner": "example",
+    "repo": "fixture",
+    "baseBranch": "master",
+    "issueBranch": "fx-<n>-<kebab-description>",
+    "noIssueBranch": "<kebab-description>",
+    "noIssueTag": "[NO-ISSUE]",
+    "pushVia": "local-git",
+    "scopeLabels": {
+      "web": [
+        "src/"
+      ]
+    }
+  },
+  "gates": [
+    "echo lint: clean",
+    "echo typecheck: clean"
+  ],
+  "commits": {
+    "scopes": {
+      "web": "src/"
+    }
+  },
+  "docs": {
+    "rules": ".claude/docs/rules/README.md",
+    "practices": ".claude/docs/practices/README.md",
+    "reviewCatalogues": ".claude/docs/review"
+  },
+  "review": {
+    "lanes": {
+      "correctness": [
+        "src/"
+      ],
+      "frontendPractices": [
+        "src/"
+      ],
+      "backendPractices": []
+    }
+  }
+}
