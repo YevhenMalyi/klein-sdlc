@@ -152,7 +152,3 @@ Not automated yet. By hand, from `templates/`:
 5. `rule-gaps.md`, `qa-catalogue.md` and `ux-house-rules.md` → the paths the manifest names.
 6. `mcp.json` → `.mcp.json`, unless the host already runs `linear`, `github` and
    `playwright` under those names.
-
-An `adopt` skill that interviews for the manifest and scaffolds the rest is the next piece
-of work. An `adopt`
-skill that interviews for the manifest and scaffolds the rest is the next piece of work.
