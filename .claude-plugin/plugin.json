@@ -1,7 +1,7 @@
 {
   "name": "klein-sdlc",
   "description": "Spec, plan, implement, commit, and a verified multi-lane review for a Claude Code project — the method as a plugin, the project's rules and catalogues in the host repo.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": {
     "name": "Yevhen Malyi"
   },
