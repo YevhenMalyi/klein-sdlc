@@ -72,7 +72,7 @@ const openIssuesQuery = `
         state { name type }
         assignee { displayName }
         labels { nodes { name } }
-        parent { identifier title state { type } }
+        parent { identifier title priority state { type } }
         children { nodes { identifier state { type } } }
         attachments { nodes { url } }
         relations { nodes { type relatedIssue { identifier title state { type } } } }
@@ -215,9 +215,12 @@ function describe(issue, linkedPrs) {
     status: issue.state.name,
     statusType: issue.state.type,
     priority: PRIORITY_NAMES[issue.priority] ?? "none",
+    isTask: Boolean(issue.parent),
     labels,
     assignee: issue.assignee?.displayName ?? "-",
-    parent: issue.parent ? `${issue.parent.identifier} (${issue.parent.state.type})` : "-",
+    parent: issue.parent
+      ? `${issue.parent.identifier} (${issue.parent.state.type}, P:${PRIORITY_NAMES[issue.parent.priority] ?? "none"})`
+      : "-",
     childCount: children.length,
     openChildCount: openChildren.length,
     openChildren: openChildren.map((c) => c.identifier),
@@ -312,8 +315,11 @@ if (ghError) {
 // --- Tickets -----------------------------------------------------------------
 
 out.push("", "## Open tickets", "");
+// A task's priority ranks it against its siblings only, so it is printed under a
+// different key: `P:` is comparable across the board, `P-in-story:` is not.
 for (const t of tickets) {
-  out.push(`${t.id}  [${t.status}/${t.statusType}]  P:${t.priority}  ${t.title}`);
+  const priority = t.isTask ? `P-in-story:${t.priority}` : `P:${t.priority}`;
+  out.push(`${t.id}  [${t.status}/${t.statusType}]  ${priority}  ${t.title}`);
   out.push(
     `      labels=${t.labels.join(",") || "-"}  assignee=${t.assignee}  parent=${t.parent}  updated=${t.updatedAt}`,
   );

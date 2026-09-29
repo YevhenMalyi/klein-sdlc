@@ -21,12 +21,7 @@
       "spike": "Spike"
     },
     "areaLabelPrefix": "area/",
-    "deferLabel": "decide later",
-    "docs": {
-      "conventions": "https://linear.app/example/document/how-we-track-work",
-      "specTemplate": "Spec template",
-      "aiInfrastructure": "https://linear.app/example/document/ai-infrastructure"
-    }
+    "deferLabel": "decide later"
   },
   "forge": {
     "kind": "github",

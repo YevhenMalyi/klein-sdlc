@@ -57,10 +57,18 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/whats-next.mjs
 ```
 
 That is the whole fetch. It returns, for **open tickets only**, everything
-steps 2–7 need: status, priority, labels, assignee, parent and its state,
-child counts with the open ones named, `blockedBy` / `blocks` / `relatedTo`
-with each target marked `(OPEN)` or `(closed)`, and the pull requests linked
-to each ticket with their state. It then adds three PR sections of its own.
+steps 2–7 need: status, priority, labels, assignee, parent with its state and
+priority, child counts with the open ones named, `blockedBy` / `blocks` /
+`relatedTo` with each target marked `(OPEN)` or `(closed)`, and the pull
+requests linked to each ticket with their state. It then adds three PR
+sections of its own.
+
+**Priority is printed under two keys, and they are not the same scale.** `P:`
+is a top-level issue's priority, comparable across the board. `P-in-story:` is
+a task's, and ranks it against the other tasks of its own story only — see
+[`TRACKING.md`](${CLAUDE_PLUGIN_ROOT}/TRACKING.md) § Priority. A task's line
+also carries its story's priority, as `parent=<id> (<state>, P:<priority>)`,
+and that is the one that places the task on the board.
 
 Two things not to do:
 
@@ -144,6 +152,10 @@ Two things worth catching here, both visible in the script's output:
   its priority. Say which ticket is holding it, so the blocker itself becomes
   a candidate.
 
+**Tasks carry blocking edges too**, between siblings. A task with an `(OPEN)`
+`blockedBy` is not pickable yet, and that does not make its story blocked —
+the story is *Ready* or *Started* as long as one of its open tasks can start.
+
 ### 5 — Read descriptions, shortlist only
 
 The script deliberately omits descriptions — they run to several kilobytes
@@ -207,9 +219,14 @@ In this order. Each rule beats every rule below it:
    into ready tasks is worth more than releasing one that still needs a
    `spec-to-stories` pass before anyone can touch it. Applies to *Started*
    and *Ready* candidates alike.
-5. **Priority is a tiebreaker, not the sort key.** Urgent/High/Medium/Low
-   separates otherwise-equal candidates. Sorting by priority first is how you
-   end up recommending a High that's blocked over a Medium that's ready.
+5. **Priority is a tiebreaker, not the sort key — and only `P:` is compared.**
+   Urgent/High/Medium/Low separates otherwise-equal candidates. Sorting by
+   priority first is how you end up recommending a High that's blocked over a
+   Medium that's ready. A candidate batch is ranked by its **story's**
+   priority; a standalone bug, chore or spike by its own. `P-in-story:` never
+   enters this step: an Urgent task under a Low story does not lift that
+   story over a Medium one, and a Low task under a High story is still
+   high-priority work.
 6. **Prefer a coherent area.** A batch that stays within one `tracker.areaLabelPrefix`
    label, or runs domain → backend → app in that order, is one piece of
    work. A batch that hops between unrelated areas is a list.
@@ -217,6 +234,12 @@ In this order. Each rule beats every rule below it:
 **If rules 1–6 all tie, say so.** Present both batches and let the user pick,
 rather than inventing a seventh rule to break it. A manufactured tiebreak
 reads as confidence the analysis does not have.
+
+**An open issue at `P:none` was never ranked.** Treat it as unranked, not as
+lowest: it loses a priority tiebreak to nothing and wins none, and it goes in
+the report under "Not implementation, but next" as board hygiene — one line
+naming the tickets, since a priority is a thirty-second fix the user has to
+make themselves.
 
 ### 8 — Report
 
@@ -272,9 +295,18 @@ isn't sliced yet.
 
 ## What counts as a batch
 
-**Default: the remaining open tasks of one story**, ordered so dependencies
-come first — schema and contract before the endpoint, the endpoint before the
-UI that calls it.
+**Default: the remaining open tasks of one story**, in the order they should
+be picked up:
+
+1. **Blocking edges first.** A task with an `(OPEN)` sibling in `blockedBy`
+   comes after that sibling, whatever either one's priority.
+2. **Then `P-in-story:`**, highest first. This is what the field is for: it
+   orders the tasks the edges leave free.
+3. **Then the layer order**, where neither of the above decides — schema and
+   contract before the endpoint, the endpoint before the UI that calls it.
+
+Say which of the three put each task where it is, in the batch table's last
+column.
 
 Two to four items. One ticket isn't a batch; five-plus stops being a
 sitting's work and starts being the story itself, in which case recommend the
@@ -283,6 +315,8 @@ story and note it's large.
 A batch may cross stories only when the tickets genuinely belong together —
 two small stories in the same area that share a migration, say. Say so
 explicitly when it happens, because the default assumption is one story.
+**Inside a cross-story batch, `P-in-story:` orders each story's own tasks and
+never interleaves the two stories** — the values come from different scales.
 
 **A batch is a proposal, not a commitment.** The user picks one ticket, all of
 them, or none. Don't chain into implementing anything.

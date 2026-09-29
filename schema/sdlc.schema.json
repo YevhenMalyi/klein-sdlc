@@ -9,7 +9,7 @@
     "$comment": { "type": "string" },
     "tracker": {
       "type": "object",
-      "required": ["kind", "team", "project", "issuePrefix", "states", "typeLabels", "areaLabelPrefix", "docs"],
+      "required": ["kind", "team", "project", "issuePrefix", "states", "typeLabels", "areaLabelPrefix"],
       "properties": {
         "kind": { "const": "linear", "description": "Only Linear is implemented today." },
         "team": { "type": "string" },
@@ -38,16 +38,7 @@
           }
         },
         "areaLabelPrefix": { "type": "string" },
-        "deferLabel": { "type": "string" },
-        "docs": {
-          "type": "object",
-          "required": ["conventions", "specTemplate"],
-          "properties": {
-            "conventions": { "type": "string", "format": "uri", "description": "The 'how we track work' document." },
-            "specTemplate": { "type": "string", "description": "Title of the tracker document template a spec is shaped by." },
-            "aiInfrastructure": { "type": "string", "format": "uri" }
-          }
-        }
+        "deferLabel": { "type": "string" }
       }
     },
     "forge": {
@@ -98,7 +89,8 @@
         "practices": { "type": "string" },
         "reviewCatalogues": { "type": "string", "description": "Directory holding one <lane>.md per review lane." },
         "qa": { "type": "string", "description": "The QA catalogue manual-qa-engineer reads first: apps, ports, sign-in per role, blocked-not-defect failures, seeded data. Shape: templates/qa-catalogue.md." },
-        "uxHouseRules": { "type": "string", "description": "Part 2 of the UX standard: the product's audiences and the rules that take sides for each. Shape: templates/ux-house-rules.md." }
+        "uxHouseRules": { "type": "string", "description": "Part 2 of the UX standard: the product's audiences and the rules that take sides for each. Shape: templates/ux-house-rules.md." },
+        "specTemplate": { "type": "string", "description": "The host's own spec template, when the plugin's does not fit. Omitted, write-spec uses templates/spec-template.md from the plugin. Shape: that file." }
       }
     },
     "review": {
