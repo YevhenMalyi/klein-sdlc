@@ -4,6 +4,52 @@ Why the plugin is shaped the way it is, and what was rejected. Nothing here is a
 instruction; the skills, agents and `REVIEW.md` carry those. This file exists so that the
 choices most likely to be "fixed" by a later maintainer come with their reasons attached.
 
+## Almost nothing is always loaded
+
+Context is expensive, so the method keeps the always-on part small and puts the detail
+behind a table.
+
+| Layer             | Lives in                                       | Loaded                             |
+| :---------------- | :--------------------------------------------- | :--------------------------------- |
+| Instructions      | the host's `CLAUDE.md`                         | Always                             |
+| Invariants        | the host's `.claude/rules/core.md`             | Always                             |
+| Review contract   | `REVIEW.md`                                    | By every reviewer, on review       |
+| Tracking contract | `TRACKING.md`                                  | By the tracker-facing skills       |
+| Rule detail       | the host's `.claude/docs/rules/`, `practices/` | On demand, per changed path        |
+| Lane catalogues   | the host's `.claude/docs/review/`              | By the lane that owns each         |
+| Skills            | `skills/*/SKILL.md`                            | Description always, body on invoke |
+| Subagents         | `agents/*.md`                                  | On delegate                        |
+
+The always-loaded core file is a routing table plus the invariants that fail _silently_,
+and that last phrase is the criterion for earning a place in it: the thing compiles, lints
+and typechecks while being wrong. A core file that restates the rule files costs twice. It
+is paid for on every session whether or not the work touches the area, and the same rule
+then has to be edited in two places.
+
+Rules and practices are two corpora rather than one because they answer different
+questions on different clocks. Rules say whether code fits this repository's architecture
+and change when the owner changes their mind. Practices say whether code uses a library
+the way the library intends, at the versions pinned, and go stale on the library's next
+major release. Where they overlap, rules win.
+
+## What lint holds, review does not repeat
+
+A convention a machine can check is worth more in the editor than in a review report:
+where a check runs decides whether it gets fixed far more than how accurate it is. So
+anything mechanically checkable belongs in the host's lint configuration, the practices
+README lists what is already enforced there, and the lanes are told to spend no attention
+on it.
+
+That makes a claim of lint coverage load-bearing, because reviewers stand down on the
+strength of it. A rule documented as enforced and not actually enforced is checked by
+nobody. Verify a claim against the configuration, by running the rule on a file that
+violates it, not against the sentence that makes the claim. A rule that is silently inert
+passes lint perfectly.
+
+What stays with review is what needs judgment or the whole project in view: whether a unit
+does one thing, which layer a file belongs to, whether something earned promotion on its
+second consumer.
+
 ## The seam between the plugin and the host
 
 The plugin holds the method: how a spec is interviewed, how a ticket is picked up, how a
@@ -147,9 +193,56 @@ once the user has actually chosen. `implement-ticket` stops short of branching o
 committing: the method branches at commit time, so the two stay separate skills rather
 than one that does everything.
 
-`write-spec` fetches the tracker's spec template live rather than carrying a copy of its
-structure. An earlier version mirrored the section list into the skill, which made it a
-second source of truth, and it drifted.
+The spec template is a file, and `write-spec` reads it rather than carrying a copy of its
+structure. The first version mirrored the section list into the skill, which made it a
+second source of truth, and it drifted. The second fetched a template document live from
+the tracker, which fixed the drift and made the plugin unusable to anyone without that
+document: an adopter got the skills and a manifest key pointing at nothing. The template
+now ships as `templates/spec-template.md`, with a host free to name its own at
+`docs.specTemplate`. There is still one source per host, which is what the live fetch was
+protecting.
+
+## The tracking contract ships with the plugin
+
+The tracking conventions and the reasoning in this file both used to live as documents in
+the tracker of the project the plugin was extracted from, reached through manifest keys.
+That was wrong twice over. The conventions are not a host's to vary: the skills implement
+them, so a host that wrote different ones would have skills that ignored its document. And
+a document in one workspace's tracker is readable only by that workspace, so every other
+adopter was told to read something they could not open.
+
+So the conventions are `TRACKING.md`, beside `REVIEW.md` and for the same reason: a
+contract several skills read belongs in one file they all point at. It names nothing of
+the host's by value. Everything project-specific stays in the manifest.
+
+The rule behind both moves: **whatever the plugin needs in order to work ships in the
+plugin.** A host's tracker holds the host's work, never the method.
+
+## The board scripts bypass the tracker's MCP
+
+`whats-next` and `linear-stats` query the tracker's API directly through plain scripts.
+The MCP cannot express "not completed and not canceled" in one call and returns no
+relations or attachments, which is most of what `whats-next` reasons over; one script call
+replaces a round trip per issue. They also keep working without a live MCP session.
+
+## Manual QA judges against the spec's own standard
+
+`manual-qa-engineer` judges the built interface against the same UX floor `refine-spec`
+holds a spec to, rather than a second standard of its own. A state-coverage gap found at
+spec time and the same gap found in the running app are one finding caught at two
+different costs.
+
+`unverified` is a severity level, not an absence of one. Some failure states cannot be
+forced from a browser, and the agent is required to name them rather than let an
+unreachable state read as a pass. It reports only: fixing is the implementer's, and filing
+is `report-bug`, which needs a human confirmation a subagent cannot give.
+
+## Ticket ids in skill files are placeholders
+
+Every illustrative id in a skill or agent is `<prefix>-XX`, never a real one. The
+tracker's forge integration links and transitions any id-shaped text it finds in a PR
+title or body regardless of context, so a real id quoted as an example can reopen a
+shipped ticket when the file's contents end up in a PR description.
 
 The interview loop in the spec skills, a design tree worked in rounds with a
 recommendation attached to each question, and the vertical-slicing and quiz-before-publish

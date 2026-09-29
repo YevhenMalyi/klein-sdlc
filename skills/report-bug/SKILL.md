@@ -25,14 +25,14 @@ The project manifest — `tracker.*` and `forge.*` below name values in it:
 !`cat .claude/sdlc.json`
 
 The output is a **top-level issue** — never a sub-issue, never a document. Read the
-conventions document at `tracker.docs.conventions` if you have not.
+tracking conventions in [`TRACKING.md`](${CLAUDE_PLUGIN_ROOT}/TRACKING.md) if you have not.
 
 ## First: is it actually a bug?
 
 Three gates. Any one of them failing means you file something else, or nothing.
 
 **Has it shipped?** A bug is _something already shipped that is behaving wrong_. A defect caught during a story's own work, before it ships, is a **task under that
-story** — the workspace convention, not a preference. That case leaves this skill: create
+story** — the tracking convention, not a preference. That case leaves this skill: create
 the task and say so.
 
 **Is the wrong behaviour user-visible?** Tooling noise, a flaky script, a dependency

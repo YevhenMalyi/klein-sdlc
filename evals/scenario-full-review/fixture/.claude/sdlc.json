@@ -18,11 +18,7 @@
       "chore": "Chore",
       "spike": "Spike"
     },
-    "areaLabelPrefix": "area/",
-    "docs": {
-      "conventions": "https://example.invalid/conventions",
-      "specTemplate": "Spec template"
-    }
+    "areaLabelPrefix": "area/"
   },
   "forge": {
     "kind": "github",

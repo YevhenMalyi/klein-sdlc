@@ -30,8 +30,9 @@ plugin can be reused.
 | `agents/finding-verifier`                 | One finding in, one verdict out, in fresh context                                              |
 | `agents/manual-qa-engineer`               | Drives the running app in a browser and reports what is broken                                 |
 | `REVIEW.md`                               | The review contract: the blocking bit, the evidence bar, the lane procedure, verification      |
+| `TRACKING.md`                             | The tracking contract: specs, stories, tasks and bugs, and what a priority ranks               |
 | `schema/sdlc.schema.json`                 | The shape of the host's `.claude/sdlc.json`                                                    |
-| `templates/`                              | Skeletons for everything the host provides: manifest, MCP servers, core rules, rule and practice files, lane catalogues, ledger, QA, house rules |
+| `templates/`                              | Skeletons for everything the host provides: manifest, MCP servers, core rules, rule and practice files, lane catalogues, ledger, QA, house rules — and the spec template `write-spec` uses |
 | `docs/design-notes.md`                    | Why it is shaped this way, and what was rejected                                               |
 
 The intended path from idea to merged PR: `write-spec` → `refine-spec` → `spec-to-stories`
@@ -69,6 +70,16 @@ Read relative to the working directory, so they live in the host repo:
 - **`.claude/rules/core.md`** — always-loaded rules: the path → file routing table the
   lanes and `implement-ticket` read, the manifest paragraph, and the invariants that fail
   silently. A plugin cannot ship always-loaded rules; `templates/core.md` is the skeleton.
+
+Optional, because the plugin carries a working default:
+
+- **A spec template** at `docs.specTemplate` — for a host whose specs need different
+  sections. Without the key, `write-spec` uses `templates/spec-template.md`.
+
+**Nothing the plugin needs lives in the host's tracker.** The tracker holds specs, stories,
+tasks and bugs — the work. How that work is tracked is `TRACKING.md`, and why the plugin is
+shaped this way is `docs/design-notes.md`; both ship with the plugin, so anyone who
+installed it can read them.
 
 ## Requirements
 
@@ -152,3 +163,8 @@ Not automated yet. By hand, from `templates/`:
 5. `rule-gaps.md`, `qa-catalogue.md` and `ux-house-rules.md` → the paths the manifest names.
 6. `mcp.json` → `.mcp.json`, unless the host already runs `linear`, `github` and
    `playwright` under those names.
+7. Only if the plugin's spec template does not fit: `spec-template.md` → a path in the host
+   repo, edited, and named at `docs.specTemplate`.
+
+In the tracker: the team, the build project, the five states and the five type labels the
+manifest names. No documents.

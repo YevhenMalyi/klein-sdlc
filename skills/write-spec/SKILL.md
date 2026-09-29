@@ -25,22 +25,27 @@ before anything else.** It changes both phases, the status line, and the order i
 you publish. Everything else here still holds.
 
 **The output is a Linear document, never a file in this repo and never an issue.** The
-workspace conventions say a spec is reference material with no "done" state, so it lives
+tracking conventions say a spec is reference material with no "done" state, so it lives
 as a document on the build's project. Read them if you have not:
-the conventions document at `tracker.docs.conventions`.
+[`TRACKING.md`](${CLAUDE_PLUGIN_ROOT}/TRACKING.md).
 
 ## Before the interview
 
-**The spec's shape is the Linear document template** named by `tracker.docs.specTemplate` — a plain
-team-scoped document, which is what the user duplicates when writing one by hand.
+**The spec's shape is the spec template, a file.** The host's own when the manifest names
+one at `docs.specTemplate`; otherwise the plugin's,
+[`templates/spec-template.md`](${CLAUDE_PLUGIN_ROOT}/templates/spec-template.md). Say which
+one you used.
 
-**Fetch it. It is the source of truth for the structure, and it is reachable:**
-`mcp__linear__list_documents` with `query: <tracker.docs.specTemplate>`, then `get_document` on the id.
-Take the status line, the section headings, and their order from what comes back — never
-from memory, and never from the table below.
+**Read it. It is the source of truth for the structure.** Everything below the horizontal
+rule is the document; the part above it is instructions to whoever fills it, and is not
+published. Take the status line, the section headings, and their order from the file —
+never from memory, and never from the table below.
+
+If the manifest names a file that is not there, stop and say so. Don't fall back to the
+plugin's template in silence — a host that named its own meant it.
 
 The table is guidance on **how to fill** each section, not a copy of the format. Where it
-and the fetched template disagree about structure, the template wins; say so rather than
+and the template disagree about structure, the template wins; say so rather than
 silently following either.
 
 | Section            | What goes in it                                                                                                                                   |
@@ -148,7 +153,7 @@ belongs to as it closes, rather than living there permanently.
 mcp__linear__save_document
   title:   "Spec: <thing>"
   project: <the build project>
-  content: <the sections from the fetched template, in its order>
+  content: <the sections from the template, in its order>
 ```
 
 Sections that don't apply are deleted, per the template's own instruction. Leave

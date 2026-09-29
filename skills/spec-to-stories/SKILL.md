@@ -34,11 +34,11 @@ The project manifest — `tracker.*` below names values in it:
 
 !`cat .claude/sdlc.json`
 
-That split is the workspace convention, not a preference:
-_"Don't create tasks for a story until you're about to start it. A story with acceptance
+That split is the tracking convention, not a preference:
+_"Don't create tasks for a story until you are about to start it. A story with acceptance
 criteria and no sub-issues is a complete backlog item."_ Creating the whole graph up front
-produces sub-issues that are stale by the time anyone opens them. Read the conventions
-document at `tracker.docs.conventions` if you have not.
+produces sub-issues that are stale by the time anyone opens them. Read the conventions in
+[`TRACKING.md`](${CLAUDE_PLUGIN_ROOT}/TRACKING.md) if you have not.
 
 ## Pass 1 — stories
 
@@ -65,8 +65,8 @@ can write _"as a <role>, I can …"_. If you can't, it isn't a story — it's a
 whose output is a decision, not code). Say which and why rather than dressing a chore up
 in story language.
 
-That test is narrower than the workspace's general definition of a story, deliberately so:
-the conventions document calls a story any parent issue with acceptance criteria that splits
+That test is narrower than the general definition of a story, deliberately so:
+`TRACKING.md` calls a story any parent issue with acceptance criteria that splits
 into tasks, user-visible or not. Here the input is a **spec**, which describes product
 functionality, so anything in it failing the as-a-role test really is a chore.
 

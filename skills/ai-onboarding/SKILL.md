@@ -86,9 +86,10 @@ Two points that save a newcomer from guessing wrong:
   tests are.
 
 The long-form reasoning — why each lane exists, what was rejected, what is still
-an open thread — is the **AI infrastructure** document in Linear:
-the document at `tracker.docs.aiInfrastructure`. Point
-at it; don't summarise it.
+on probation — ships with the plugin:
+[`design-notes.md`](${CLAUDE_PLUGIN_ROOT}/docs/design-notes.md). Point at it;
+don't summarise it. It is a file on their machine, so give the path, never a
+link into a tracker or a wiki the reader may not be able to open.
 
 Then say what the workflow is, in one line, because the rest of this skill is
 walking it:
