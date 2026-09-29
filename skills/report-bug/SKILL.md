@@ -109,8 +109,9 @@ round for it — a correction from the user is cheap, and it always wins.
 their role forbids is the failure mode this repo spends the most structure preventing — see
 the doc at `docs.permissions`.
 
-Priority ordering is how work gets ranked here, because **estimates and cycles are off.
-Never set them.**
+A bug is top-level, so its priority ranks it against the whole board — stories included
+(`TRACKING.md` § Priority). Priority is how work gets ranked here, because **estimates and
+cycles are off. Never set them.**
 
 ## The report
 

@@ -218,6 +218,33 @@ the host's by value. Everything project-specific stays in the manifest.
 The rule behind both moves: **whatever the plugin needs in order to work ships in the
 plugin.** A host's tracker holds the host's work, never the method.
 
+## Priority is scoped to its siblings
+
+`spec-to-stories` used to publish every issue without a priority while telling the user
+that priority was how work gets ranked, and `whats-next` then broke ties on a field that
+was empty across the board.
+
+Both passes now propose one, and the user corrects it before anything is published. It is
+proposed rather than asked for because a recommendation lets the user accept a whole
+breakdown in a word, the same reasoning as the interview loop.
+
+A task's priority is deliberately not on the same scale as a story's. It ranks the task
+against the other tasks of its story and says which slice to pick up first. The
+alternative, one board-wide scale, was rejected because it has no good answer for a task
+under a story of a different priority: either every task copies its story, and the field
+carries no information, or tasks differ from their story, and a board sorted by priority
+interleaves slices of unrelated stories. Scoping the field to the story keeps both
+readings useful. The story's priority places the work on the board; the task's orders it
+once someone is inside the story.
+
+`whats-next` therefore compares only top-level priorities when it ranks batches, and its
+script prints the two under different keys so that a task's value cannot be read as a
+board-wide one by accident.
+
+Priority never stands in for a dependency. A hard dependency is a blocked-by relation, a
+blocker is never ranked below what it blocks, and priority orders only what the relations
+leave free.
+
 ## The board scripts bypass the tracker's MCP
 
 `whats-next` and `linear-stats` query the tracker's API directly through plain scripts.

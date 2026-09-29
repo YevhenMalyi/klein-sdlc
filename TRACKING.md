@@ -97,6 +97,55 @@ thing and outlives that story.
 The exception: a defect caught _during_ the story's own work, before it ships, is a task
 under it.
 
+## Priority
+
+Every story, task, bug, chore and spike carries one. "No priority" is not a fifth level —
+it means nobody looked, and a board skill cannot rank what nobody looked at.
+
+**A priority is read against its siblings, and what counts as a sibling depends on where
+the issue sits.**
+
+| Issue                                | Its priority ranks it against            |
+| :----------------------------------- | :--------------------------------------- |
+| Top-level — story, bug, chore, spike | Every other top-level issue on the board |
+| Task — a sub-issue                   | The other tasks of **the same story**    |
+
+A task's priority says which slice of its story to pick up first, and nothing else. It is
+never compared with a task of another story or with a top-level issue: a `Low` task under a
+`High` story is still part of high-priority work, and an `Urgent` task under a `Low` story
+outranks nothing outside that story. What places a task on the board is its story's
+priority.
+
+### Top-level issues
+
+| Priority       | A story, chore or spike gets it when                                                           |
+| :------------- | :--------------------------------------------------------------------------------------------- |
+| **1 — Urgent** | Something outside the board is waiting on it: a date, a commitment. Rare for planned work      |
+| **2 — High**   | The spec's primary goal cannot be demonstrated without it, or other stories are blocked by it  |
+| **3 — Medium** | It delivers a stated goal and nothing else waits on it. The default                            |
+| **4 — Low**    | A refinement: the spec would still meet its goals without it                                   |
+
+Bugs use the same four levels by severity; the table is `report-bug`'s.
+
+### Tasks
+
+| Priority       | A task gets it when                                                                                     |
+| :------------- | :------------------------------------------------------------------------------------------------------ |
+| **1 — Urgent** | A defect caught mid-story that stops the other tasks being worked                                       |
+| **2 — High**   | Other slices of the story build on it, or it carries the story's main uncertainty and should fail early |
+| **3 — Medium** | The body of the story. The default                                                                      |
+| **4 — Low**    | It can land last, and the story is still demoable if it is cut                                          |
+
+### Two rules that hold at both levels
+
+- **A blocker is never ranked below what it blocks.** When a story blocks a higher-priority
+  one, the blocker is raised to match. The same holds between two tasks of one story.
+- **Priority orders only what the relations leave free.** A hard dependency is a blocked-by
+  relation, not a priority. Priority says which of the things that _could_ start should.
+
+`spec-to-stories` proposes a priority for every issue it drafts, with its reason, and the
+user corrects it before anything is published.
+
 ## Areas
 
 Labels under `tracker.areaLabelPrefix` are flat, not a group, because a change often spans
