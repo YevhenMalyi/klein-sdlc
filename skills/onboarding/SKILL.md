@@ -1,24 +1,27 @@
 ---
-name: ai-onboarding
+name: onboarding
 description: >-
   Tours how Claude Code is set up on this repo — skills, review lanes,
-  subagents, the rules corpus — then guides a person step by step through
-  shipping their first ticket, from the board to an open PR, invoking the real
-  workflow rather than describing it. Use when someone says "onboard me to the
-  AI setup", "how do we use Claude here", "what skills do we have", "walk me
-  through my first ticket", "show me the workflow", or is new to the team and
-  ready to work rather than set up their machine. Installing and running the
-  apps is the host's own setup guide, not this skill.
+  subagents, the rules corpus — explains how work gets onto the board, from a
+  spec to stories to tasks, then guides a person step by step through shipping
+  their first ticket, from the board to an open PR, invoking the real workflow
+  rather than describing it. Use when someone says "onboard me", "onboard me
+  to the AI setup", "how do we use Claude here", "what skills do we have",
+  "how do specs become tickets", "walk me through my first ticket", "show me
+  the workflow", or is new to the team and ready to work rather than set up
+  their machine. Installing and running the apps is the host's own setup
+  guide, not this skill.
 ---
 
-# AI onboarding
+# Onboarding
 
-Two halves. **The tour** — what is checked in, what each piece is for, and where
-the reasoning lives. **The first ticket** — the person actually ships one, with
-you alongside each step.
+Three parts. **The tour** — what is checked in, what each piece is for, and
+where the reasoning lives. **How work gets onto the board** — a spec, then
+stories, then tasks, and which skill makes each. **The first ticket** — the
+person actually ships one, with you alongside each step.
 
-The second half is the point. The tour exists so the first ticket makes sense,
-not the other way around, so keep it short and get to the work.
+The third part is the point. The first two exist so the first ticket makes
+sense, not the other way around, so keep them short and get to the work.
 
 The project manifest — `tracker.*` and `forge.*` below name values in it:
 
@@ -38,9 +41,13 @@ The project manifest — `tracker.*` and `forge.*` below name values in it:
   get a yes before touching the board.
 - **Never start the dev server.** Step 5 needs the apps running; ask the
   person to start them and wait.
-- **Run only the five steps below.** Not an extra review lane, not a second QA
+- **Run only the steps of Part 3.** Not an extra review lane, not a second QA
   sweep, not `/code-review` on top of `full-review`. The chain is the lesson;
   padding it teaches the wrong thing about what a normal change costs.
+- **Part 2 is described, not run.** Writing a spec is a long interview and
+  slicing one publishes issues; neither belongs inside an onboarding pass
+  unless the board is empty and the person asks for it — see Part 3's
+  preconditions.
 - **Stop at any step that goes wrong, and fix it there.** A newcomer following
   a broken chain learns that the chain is decorative. A failing gate at
   step 3 is a step-3 problem.
@@ -67,8 +74,9 @@ What's checked in:
 | [`.claude/docs/rules/`](.claude/docs/rules/README.md)              | Normative: does this fit **our** architecture? Read per changed path                                  |
 | [`.claude/docs/practices/`](.claude/docs/practices/README.md)      | Normative: is this how **the library** is meant to be used, at the versions pinned here                |
 | `REVIEW.md` (plugin)                                             | The review contract — what gets flagged, at what strength, and the evidence bar                       |
+| `TRACKING.md` (plugin)                                           | The tracking contract — what a spec, story, task and bug are, and what a priority means               |
 | [`.claude/docs/review/`](.claude/docs/review/README.md)            | One catalogue per review lane: this repo's invariants, auth surface, greps and sanctioned forms       |
-| `klein-sdlc` skills (plugin)                                        | The workflow skills, namespaced `/klein-sdlc:<name>`, including the five this pass uses                 |
+| `klein-sdlc` skills (plugin)                                        | The workflow skills, namespaced `/klein-sdlc:<name>`, including the five Part 3 uses                    |
 | `klein-sdlc` agents (plugin)                                        | Eight subagents — six review lanes, plus `finding-verifier` and `manual-qa-engineer`                  |
 | [`.claude/docs/rule-gaps.md`](.claude/docs/rule-gaps.md)           | Candidate rules a review raised and nobody has ruled on yet                                           |
 | `.mcp.json`                                                      | The MCP servers the host connects always — the tracker and forge at minimum                          |
@@ -80,10 +88,16 @@ Two points that save a newcomer from guessing wrong:
   none reads another's output, and every finding goes past `finding-verifier` in
   fresh context before it reaches the report. `full-review` orchestrates them; it
   reviews nothing itself.
-- **Tests are written in dedicated passes, not alongside features.** "No new
-  tests" is the normal and correct answer on a feature branch — see
-  [`testing.md`](.claude/docs/rules/testing.md). Nobody will ask them where the
-  tests are.
+- **Whether tests travel with a change is the host's rule, not the plugin's.**
+  Read [`testing.md`](.claude/docs/rules/testing.md) and say what it says —
+  some hosts write tests in dedicated passes, where "no new tests" is the
+  normal answer on a feature branch; others require them in the same PR. Never
+  state either from memory.
+
+**Say only what is true of this repo.** Before presenting the table, check that
+each host piece exists, and report what is missing or marked unwritten — a
+lane with no catalogue is skipped, and a newcomer should hear that from you
+rather than from an empty review.
 
 The long-form reasoning — why each lane exists, what was rejected, what is still
 on probation — ships with the plugin:
@@ -91,15 +105,56 @@ on probation — ships with the plugin:
 don't summarise it. It is a file on their machine, so give the path, never a
 link into a tracker or a wiki the reader may not be able to open.
 
-Then say what the workflow is, in one line, because the rest of this skill is
-walking it:
+## Part 2 — How work gets onto the board
+
+Describe this; don't run it. Two or three minutes, and the point is that the
+newcomer knows where a ticket came from before they pick one up. The contract
+for all of it is [`TRACKING.md`](${CLAUDE_PLUGIN_ROOT}/TRACKING.md).
+
+> `/klein-sdlc:write-spec` → `/klein-sdlc:refine-spec` → `/klein-sdlc:spec-to-stories` (stories) → `/klein-sdlc:spec-to-stories` (tasks, one story at a time)
+
+| Step | Skill | Produces | Where it lives |
+| :-- | :-- | :-- | :-- |
+| 1 | `write-spec` | A `Spec: <thing>` document, status `Draft` | A document on the build's project — never an issue, never a file in the repo |
+| 2 | `refine-spec` | The same spec, corrected against UX practice, status `Refined <date>` | The same document |
+| 3 | `spec-to-stories`, pass 1 | Stories: acceptance criteria, a priority, area labels, blocked-by relations | Parent issues, linked from the spec's **Stories** section |
+| 4 | `spec-to-stories`, pass 2 | Tasks for **one** story, each roughly one PR, each with a priority | Sub-issues of that story |
+
+`report-bug` is the other way onto the board: a bug comes from the running
+product, so nothing upstream of it exists to plan from. It is a top-level
+issue, never a task.
+
+Four things worth saying out loud, because each one is where a newcomer
+guesses wrong:
+
+- **The spec's status line is a gate.** `spec-to-stories` plans only from
+  `Refined`. It refuses a `Draft` and says why, and it refuses an `As-built`
+  spec outright, because that one documents what already ships.
+- **The order carries weight.** Refinement changes behaviour, and behaviour
+  changed after planning invalidates the plan — so `refine-spec` runs before
+  anything is sliced.
+- **Stories and tasks are made far apart in time.** Pass 1 runs once per spec.
+  Pass 2 runs when someone is about to start that story, never for the whole
+  backlog up front. A story with acceptance criteria and no tasks is a
+  complete backlog item — and it is not implementable yet, which is why
+  `whats-next` reports it as unsliced rather than ready.
+- **A priority means two different things.** A story's priority ranks it
+  against the whole board. A task's ranks it against the other tasks of its
+  own story, and nothing else: it says which slice to pick up first. Both are
+  proposed by `spec-to-stories` and corrected by the user before anything is
+  published.
+
+Nothing reaches the tracker from any of these skills without an approval: each
+one drafts, quizzes, and publishes only then.
+
+Then say what the rest of this skill walks, in one line:
 
 > `/klein-sdlc:whats-next` → `/klein-sdlc:implement-ticket` → `/klein-sdlc:full-review` → `manual-qa-engineer` → `/klein-sdlc:commit-and-pr`
 
 And check they want to proceed. From here a real ticket moves and a real PR
 opens.
 
-## Part 2 — The first ticket
+## Part 3 — The first ticket
 
 Before step 1, confirm the preconditions rather than discovering them at step 5:
 
@@ -109,6 +164,18 @@ git status --short --branch
 
 A dirty tree or a branch other than `forge.baseBranch` is a stop-and-ask, not something to clean
 up. Also ask whether the dev server is running — step 5 needs it.
+
+Two preconditions are the host's state rather than the person's, and both are
+worth knowing before step 1 rather than at the step they break:
+
+- **An empty board has no first ticket.** If `whats-next` comes back with
+  nothing open, Part 3 stops there and Part 2 becomes the next step for real:
+  the work is a spec, via `/klein-sdlc:write-spec`. Say so, and offer it —
+  don't invent a ticket to keep the walkthrough moving.
+- **A host with no runnable app has no step 5.** The QA catalogue at `docs.qa`
+  says whether there is anything to drive. If there is not,
+  `manual-qa-engineer` reports blocked, and that is the correct result; say it
+  up front so it does not read as a failure.
 
 ### 1 — The board: they run `/klein-sdlc:whats-next`
 
@@ -157,6 +224,10 @@ to a clean current base branch, fetch the issue, **move it to `tracker.states.in
 assign it to them**, roll the parent story up if this is the task that starts it,
 read the rule files matching the paths it is about to touch, implement, and run
 every command in `gates`.
+
+If the ticket is a task, its priority is the one Part 2 described: it ranked
+the task inside its story, and the story's priority is what put this batch in
+front of them.
 
 The two things worth pointing out while it works:
 
@@ -212,13 +283,14 @@ separate `report-bug`.
 ### 6 — Ship: `/klein-sdlc:commit-and-pr`
 
 Invoke it. It branches (now, not earlier), groups the changes into conventional
-commits by concern via `craft-commits`, pushes through local `git`, opens the PR
+commits by concern via `craft-commits`, pushes the way `forge.pushVia` says, opens the PR
 with the tracker wiring and labels, and moves the ticket to **`tracker.states.inReview`**.
 
 Two things to point out:
 
 - The PR body template and the Linear issue link are the skill's, not
-  improvised — and CI runs the same `gates` before the merge.
+  improvised — and where the host runs CI, it runs the same `gates` before the
+  merge. Check that it does before saying so.
 - The push goes the way `forge.pushVia` says, for the reason in
   `forge.pushViaNote`. Whichever route that is, it is the normal one, not a
   fallback.
@@ -231,8 +303,10 @@ Close the loop in a few lines:
   before QA because a browser pass on code that fails review is wasted, QA
   before the PR because a reviewer should not be the one to find a broken page.
 - Where each piece of it is written down, so they can run it without this skill
-  next time: the plugin's [`README.md`](${CLAUDE_PLUGIN_ROOT}/README.md) and
-  [`REVIEW.md`](${CLAUDE_PLUGIN_ROOT}/REVIEW.md).
+  next time: the plugin's [`README.md`](${CLAUDE_PLUGIN_ROOT}/README.md),
+  [`REVIEW.md`](${CLAUDE_PLUGIN_ROOT}/REVIEW.md) for how a finding is reported,
+  and [`TRACKING.md`](${CLAUDE_PLUGIN_ROOT}/TRACKING.md) for how work is
+  tracked.
 - What they hit that the rules corpus does not cover, if anything. That is a
   **rule gap**, it goes in [`rule-gaps.md`](.claude/docs/rule-gaps.md), and a
   newcomer is the best source of them — they are the only person who has not

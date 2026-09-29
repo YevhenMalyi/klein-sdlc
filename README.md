@@ -25,7 +25,7 @@ plugin can be reused.
 | `skills/commit-and-pr`                    | Branch, verify, commit, push, open a PR with tracker wiring and labels                         |
 | `skills/full-review`                      | Run the review lanes in parallel, verify every finding, merge one report, log the gaps         |
 | `skills/linear-stats`                     | Print the board's ticket counts by status                                                      |
-| `skills/ai-onboarding`                    | Tour the setup, then walk a newcomer through a first ticket for real                           |
+| `skills/onboarding`                       | Tour the setup and the planning workflow, then walk a newcomer through a first ticket for real |
 | `agents/*-reviewer` (six)                 | The review lanes: structure, design, correctness, security, frontend and backend practices     |
 | `agents/finding-verifier`                 | One finding in, one verdict out, in fresh context                                              |
 | `agents/manual-qa-engineer`               | Drives the running app in a browser and reports what is broken                                 |

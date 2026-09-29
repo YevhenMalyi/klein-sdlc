@@ -252,6 +252,28 @@ The MCP cannot express "not completed and not canceled" in one call and returns 
 relations or attachments, which is most of what `whats-next` reasons over; one script call
 replaces a round trip per issue. They also keep working without a live MCP session.
 
+## Onboarding is for a person, and ships for real
+
+An agent already has the host's instructions and the core rules loaded, so a skill
+restating them would be one more copy of a description that exists twice already.
+`onboarding` is for a newcomer, and it splits from the host's own setup guide on machine
+versus method: getting a clone running is the host's, because only the host knows its
+first-run sequence.
+
+It invokes each skill rather than narrating it, since a copy of their steps would go stale
+on the next change to any of them, and it ships a real ticket, because a dry run teaches
+the mechanics and none of the stakes. The newcomer types `whats-next` themselves. The
+ticket is chosen against a good-first-ticket filter rather than `whats-next`'s own, which
+optimises for the next coherent batch and is not the same thing.
+
+It describes how a spec becomes stories and tasks without running that half. Writing a
+spec is a long interview and slicing one publishes issues, and neither is a first-day
+exercise. The exception is an empty board, where there is no first ticket and the honest
+next step is the spec.
+
+It states nothing about the host from memory. Whether tests travel with a change, whether
+CI exists, which lanes have a catalogue: each is read from the host before it is said.
+
 ## Manual QA judges against the spec's own standard
 
 `manual-qa-engineer` judges the built interface against the same UX floor `refine-spec`
