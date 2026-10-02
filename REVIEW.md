@@ -1,12 +1,25 @@
 # REVIEW.md
 
-How a finding is reported here. Read by the six review lanes, by `finding-verifier`, and by
-the `full-review` skill that orchestrates them.
+How a finding is reported here. Read by every review lane the host declares, by
+`finding-verifier`, and by the `full-review` skill that orchestrates them. A lane holds it
+in context from the start: its agent file preloads the `review-contract` skill, which
+injects this file at load time.
 
 It carries no rules of its own — those live in [`.claude/docs/rules/`](.claude/docs/rules/README.md)
 and [`.claude/docs/practices/`](.claude/docs/practices/README.md), and this file links to
 them rather than restating them. Why it is shaped this way:
 [`design-notes.md`](${CLAUDE_PLUGIN_ROOT}/docs/design-notes.md).
+
+## The lanes are the host's
+
+The plugin ships one lane, `basic-reviewer`, and the method. Which lanes review a diff, in
+what order, and on what trigger is the host's manifest, `.claude/sdlc.json` → `review.lanes`:
+one entry per lane naming the agent, its catalogue under `docs.reviewCatalogues`, and
+whether it runs always, on a path list, or on the trigger list its catalogue carries. The
+agent files live in the host's `.claude/agents/`, each cut from `basic-reviewer` by
+`implement-reviewer`. An agent file is the half that would be the same in any repo with
+that lane — what it owns, what it leaves to the others, its procedure, its severity table.
+The catalogue is the half that is not.
 
 ## The blocking bit
 
@@ -26,37 +39,27 @@ not the same claim.
 
 ## What blocks, by default
 
-| Tier                                                           | Lane              | Default          |
-| -------------------------------------------------------------- | ----------------- | ---------------- |
-| `hole`                                                         | security          | `(blocking)`     |
-| `breach`                                                       | correctness       | `(blocking)`     |
-| `bug`                                                          | correctness       | `(blocking)`     |
-| `violation`                                                    | structure         | `(blocking)`     |
-| `defect`                                                       | design            | `(blocking)`     |
-| `wrong`                                                        | practices ×2      | `(blocking)`     |
-| `risky` touching secrets, tokens, or authorization             | practices ×2      | `(blocking)`     |
-| `risky`, otherwise                                             | practices ×2      | `(non-blocking)` |
-| `weakening`                                                    | security          | `(if-minor)`     |
-| `drift`                                                        | structure, design | `(if-minor)`     |
-| `latent`                                                       | correctness       | `(if-minor)`     |
-| `speculative`                                                  | design            | `(if-minor)`     |
-| `stale`                                                        | practices ×2      | `(if-minor)`     |
-| `rule gap` / `practice gap` / `invariant gap` / `exposure gap` | all               | `(non-blocking)` |
+**Each lane's severity table carries a "Blocks by default" column**, and that column is the
+default for its tiers. The contract fixes only what every lane's table must honour:
+
+- **A tier blocks by default when a finding in it is checkable against a document or a
+  concrete failure, so that it is rarely wrong.** A tier that is often wrong when it blocks
+  poisons trust in every finding beside it; if a blocking tier starts arriving wrong,
+  tighten its bar, not its bit.
+- **A tier that makes a behaviour claim earns its blocking bit by naming the concrete
+  failure** — what breaks, for whom, under what conditions — and drops to the lane's
+  non-blocking hazard tier when it cannot. A reachability claim walks the path in: which
+  caller, which asset, under what conditions. A hazard you cannot make fail, even on
+  paper, or cannot walk from an actor to an asset, does not block.
+- **Gap tiers never block.** `rule gap`, `practice gap`, `invariant gap`, `exposure gap` —
+  whatever a lane calls it — means the code is reasonable and no rule covers it. A lane
+  raises a gap and is forbidden from acting on it; `full-review` appends it to
+  [`.claude/docs/rule-gaps.md`](.claude/docs/rule-gaps.md) after the report is out, since no
+  lane holds a write tool. A gap graduates on how often the pattern occurs and how wrong a
+  check would be — never on how often it was raised.
 
 **Defaults, not a ceiling.** Raise or lower a finding's bit and say why in the same line.
-
-Three blocking tiers carry a bar of their own, and drop a tier when they cannot clear it:
-
-- **`breach` and `bug`** — name the concrete failure: what breaks, for whom, under what
-  conditions. A hazard you cannot make fail, even on paper, is a `latent`.
-- **`hole`** — walk the path in: which caller, which asset, under what conditions. A hazard
-  you cannot walk from an actor to an asset is a `weakening`.
-
-**Gap tiers never block.** They are not defects — the code is reasonable and no rule covers
-it. A lane raises a gap and is forbidden from acting on it; `full-review` appends it to
-[`.claude/docs/rule-gaps.md`](.claude/docs/rule-gaps.md) after the report is out, since no
-lane holds a write tool. A gap graduates on how often the pattern occurs and how wrong a
-check would be — never on how often it was raised.
+A finding touching secrets, tokens or authorization blocks whatever its tier.
 
 ## Scope: the changed file, not the changed hunk
 
@@ -87,7 +90,7 @@ layering issue" is not reportable at any bit.
 
 ## Lane procedure
 
-Shared by the six lanes; each agent file adds only what is its own.
+Shared by every lane; each agent file adds only what is its own.
 
 ### 1. Establish the diff
 
@@ -128,8 +131,8 @@ Most severe first. Per finding:
 - **what the code does** and **what the rule requires**
 - **the concrete fix**
 
-A `bug` has no document behind it: cite the line and the input that breaks it, and do not
-invent a rule to attach.
+A finding with no document behind it — a plain bug — cites the line and the input that
+breaks it, and does not invent a rule to attach.
 
 End with a one-line verdict — clean, or the tier counts and how many are `(blocking)`. A
 clean diff gets a sentence or two. No restated rules, no praise, no summary of what the diff
@@ -144,18 +147,16 @@ say which you think is wrong and leave the call to the repo owner.
 ## Without a rules corpus
 
 A lane reports against a document, never from general knowledge. When the document is
-missing, the lane degrades explicitly rather than improvising:
+missing, the lane degrades explicitly rather than improvising, and **each agent file says
+how, in its own "No catalogue?" line**: most lanes say so in one line and stop, reporting
+nothing; a lane with a tier that cites code rather than a rule runs that tier only and
+says which tier was skipped. `full-review` does not spawn a lane whose catalogue is absent
+unless the manifest entry marks the catalogue optional, and it says in its opening line
+which lanes it skipped for that reason.
 
-| Missing                                          | Lane                                  | Behaviour                                                  |
-| ------------------------------------------------ | ------------------------------------- | ---------------------------------------------------------- |
-| `.claude/docs/rules/`, or the lane's catalogue   | structure, design                     | Say so in one line and stop; report nothing                |
-| `.claude/docs/practices/`, or the lane's catalogue | frontend-practices, backend-practices | Say so in one line and stop; report nothing              |
-| the correctness catalogue                        | correctness                           | Run the `bug` tier only — it cites code, not a rule — and say `breach` was skipped |
-| the security catalogue                           | security                              | Never spawned; there is no trigger list                    |
-
-A missing corpus is not a gap finding. It is the adoption step not yet done, and
-`full-review` says so in its opening line. The shapes to fill are the `templates/` in the
-plugin.
+A missing corpus is not a gap finding. It is the adoption step not yet done. The shapes to
+fill are the `templates/` in the plugin, and `implement-reviewer` writes a lane's agent
+and catalogue together.
 
 ## Skip paths
 

@@ -1,22 +1,21 @@
 # Review catalogues
 
 What each review lane checks **in this repo**, one file per lane. The lane's agent file
-in the `klein-sdlc` plugin says what the lane owns, how it proceeds, and how it
-grades a finding; that part is the same in any repo. The catalogue here is the part that is
-not: the invariants of this architecture, the paths that make up its auth surface, the
-greps that find its failure shapes, the exceptions its rules sanction, and the arrangements
-that look wrong to a general instinct but are deliberate.
+in `.claude/agents/` says what the lane owns, how it proceeds, and how it grades a
+finding; that part would be the same in any repo with that lane. The catalogue here is the
+part that is not: the invariants of this architecture, the paths that make up its auth
+surface, the greps that find its failure shapes, the exceptions its rules sanction, and
+the arrangements that look wrong to a general instinct but are deliberate.
 
-| Lane                          | Catalogue                                          |
-| ----------------------------- | -------------------------------------------------- |
-| `structure-reviewer`          | [`structure.md`](./structure.md)                   |
-| `design-reviewer`             | [`design.md`](./design.md)                         |
-| `correctness-reviewer`        | [`correctness.md`](./correctness.md)               |
-| `security-reviewer`           | [`security.md`](./security.md)                     |
-| `frontend-practices-reviewer` | [`frontend-practices.md`](./frontend-practices.md) |
-| `backend-practices-reviewer`  | [`backend-practices.md`](./backend-practices.md)   |
+The lanes, their catalogues and their triggers are `review.lanes` in `.claude/sdlc.json`;
+this table mirrors it for a reader.
 
-`lane.md` and `security.md` in the plugin's `templates/review/` are the skeletons.
+| Lane                   | Catalogue                          | Trigger             |
+| ---------------------- | ---------------------------------- | ------------------- |
+| `<name>-reviewer`      | [`<name>.md`](./<name>.md)         | always / paths / catalogue |
+
+`lane.md` and `security.md` in the plugin's `templates/review/` are the skeletons, and
+`implement-reviewer` writes a lane's agent, catalogue and manifest entry together.
 
 A lane reads its catalogue first, every run. The catalogue is not a second rulebook: every
 entry cites the rule or practice file that carries it, and a finding is reported against

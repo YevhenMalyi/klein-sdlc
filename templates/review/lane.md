@@ -1,27 +1,27 @@
 # <Lane> catalogue
 
-Copy to `.claude/docs/review/<lane>.md` — one per lane, named `structure`, `design`,
-`correctness`, `frontend-practices` or `backend-practices`. The security lane has its own
-skeleton, `security.md`, because its trigger list is canonical. The lane reads this file
-first, every run. It is the search, not a second rulebook: every entry cites the rule or
-practice file the finding is reported against.
+Copy to `<docs.reviewCatalogues>/<lane>.md`, the file the lane's `review.lanes` entry
+names — `implement-reviewer` does this with the agent file. A lane that fires on its
+catalogue's own trigger list has its own skeleton, `security.md`, because that list is
+canonical. The lane reads this file first, every run. It is the search, not a second
+rulebook: every entry cites the rule or practice file the finding is reported against.
 
-Not every section applies to every lane. Which are required:
+Not every section applies to every kind of lane. Which are required:
 
-| Section                                    | structure | design | correctness | practices ×2 |
-| ------------------------------------------ | :-------: | :----: | :---------: | :----------: |
-| Scope                                      |           |        |             |      ✓       |
-| Gates, scoped to the lane                  |           |        |             |      ✓       |
-| What lint and typecheck already rule out   |     ✓     |        |             |      ✓       |
-| Which rule or practice file the diff needs |           |   ✓    |             |      ✓       |
-| Entries                                    |           |        |      ✓      |              |
-| High-value greps                           |     ✓     |   ✓    |      ✓      |      ✓       |
-| Sanctioned forms                           |     ✓     |        |             |      ✓       |
-| Deliberate arrangements                    |           |        |      ✓      |      ✓       |
+| Section                                    | placement / conformance | judgment (design) | invariants (correctness) | library idiom (practices) |
+| ------------------------------------------ | :---------------------: | :---------------: | :----------------------: | :-----------------------: |
+| Scope                                      |                         |                   |                          |             ✓             |
+| Gates, scoped to the lane                  |                         |                   |                          |             ✓             |
+| What lint and typecheck already rule out   |            ✓            |                   |                          |             ✓             |
+| Which rule or practice file the diff needs |                         |         ✓         |                          |             ✓             |
+| Entries                                    |                         |                   |            ✓             |                           |
+| High-value greps                           |            ✓            |         ✓         |            ✓             |             ✓             |
+| Sanctioned forms                           |            ✓            |                   |                          |             ✓             |
+| Deliberate arrangements                    |                         |                   |            ✓             |             ✓             |
 
 ## Scope
 
-The path prefixes this lane owns in this repo. They match the lane's list in
+The path prefixes this lane owns in this repo. They match the lane's `trigger` list in
 `.claude/sdlc.json` under `review.lanes`; "nothing of mine changed" is a complete answer.
 
 ## Gates, scoped to the lane
@@ -43,7 +43,7 @@ what is specific to this lane's surface.
 
 ## Entries
 
-For the correctness lane: one per failure shape, each stating **what breaks**, **the rule
+For an invariants lane: one per failure shape, each stating **what breaks**, **the rule
 that carries it** (file and section), and usually **a grep**. An entry states a failure,
 not a smell — "a second caller of this service bypasses the check the router made",
 not "authorization looks inconsistent".

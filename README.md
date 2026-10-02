@@ -6,10 +6,11 @@ and review a diff through parallel specialist lanes whose every finding is verif
 fresh context before it is reported.
 
 The plugin holds the **method**. The host repository holds everything that is true only of
-that repository: its architecture rules, its library practices, the per-lane catalogues
-that say where in that codebase each rule tends to break, and one manifest naming its
-tracker, forge and gates. The seam between the two is deliberate, and it is the reason the
-plugin can be reused.
+that repository: its architecture rules, its library practices, the review lanes
+themselves — one subagent each, cut from the plugin's `basic-reviewer` — with a catalogue
+per lane saying where in that codebase each rule tends to break, and one manifest naming
+its tracker, forge, gates and lanes. The seam between the two is deliberate, and it is the
+reason the plugin can be reused.
 
 ## What is in it
 
@@ -23,21 +24,23 @@ plugin can be reused.
 | `skills/implement-ticket`                 | Pick up a ticket by number and implement it on the base branch, without branching             |
 | `skills/craft-commits`                    | Regroup branch changes into conventional commits, one concern per commit                       |
 | `skills/commit-and-pr`                    | Branch, verify, commit, push, open a PR with tracker wiring and labels                         |
-| `skills/full-review`                      | Run the review lanes in parallel, verify every finding, merge one report, log the gaps         |
+| `skills/full-review`                      | Run the host's review lanes in parallel, verify every finding, merge one report, log the gaps  |
+| `skills/implement-reviewer`               | Add a review lane to the host: agent, catalogue and manifest entry, cut from `basic-reviewer` |
+| `skills/review-contract`                  | `REVIEW.md` as a skill, so a host's lane preloads the contract from the plugin                 |
 | `skills/linear-stats`                     | Print the board's ticket counts by status                                                      |
 | `skills/onboarding`                       | Tour the setup and the planning workflow, then walk a newcomer through a first ticket for real |
-| `agents/*-reviewer` (six)                 | The review lanes: structure, design, correctness, security, frontend and backend practices     |
+| `agents/basic-reviewer`                   | The one lane the plugin ships: rules conformance plus ordinary bugs, and the boilerplate every host lane is cut from |
 | `agents/finding-verifier`                 | One finding in, one verdict out, in fresh context                                              |
 | `agents/manual-qa-engineer`               | Drives the running app in a browser and reports what is broken                                 |
 | `REVIEW.md`                               | The review contract: the blocking bit, the evidence bar, the lane procedure, verification      |
 | `TRACKING.md`                             | The tracking contract: specs, stories, tasks and bugs, and what a priority ranks               |
 | `schema/sdlc.schema.json`                 | The shape of the host's `.claude/sdlc.json`                                                    |
-| `templates/`                              | Skeletons for everything the host provides: manifest, MCP servers, core rules, rule and practice files, lane catalogues, ledger, QA, house rules — and the spec template `write-spec` uses |
+| `templates/`                              | Skeletons for everything the host provides: manifest, MCP servers, core rules, rule and practice files, lane catalogues, ledger, QA, house rules — and the spec template `write-spec` uses. The lane agent skeleton is `agents/basic-reviewer.md` itself |
 | `docs/design-notes.md`                    | Why it is shaped this way, and what was rejected                                               |
 
 The intended path from idea to merged PR: `write-spec` → `refine-spec` → `spec-to-stories`
 → `whats-next` → `implement-ticket` → `full-review` → `commit-and-pr`, with `report-bug`
-as the other way onto the board.
+as the other way onto the board and `implement-reviewer` for growing the review itself.
 
 ## What the host provides
 
@@ -45,9 +48,15 @@ Read relative to the working directory, so they live in the host repo:
 
 - **`.claude/sdlc.json`** — the manifest. Tracker team, project, issue prefix, states and
   labels; forge owner, repo, base branch, branch pattern and scope labels; the verification
-  gates; the commit scopes; which paths make each conditional review lane run. Validated by
-  `schema/sdlc.schema.json`. Every skill injects it at load time and names a value by its
-  path (`tracker.states.inReview`) rather than quoting it.
+  gates; the commit scopes; the review lanes — each entry an agent, a catalogue and a
+  trigger, in spawn order. Validated by `schema/sdlc.schema.json`. Every skill injects it
+  at load time and names a value by its path (`tracker.states.inReview`) rather than
+  quoting it.
+- **`.claude/agents/<lane>.md`** — the review lanes, one subagent each, named by the
+  manifest. Each is `agents/basic-reviewer.md` narrowed to one question, and preloads
+  `klein-sdlc:review-contract` so it starts with `REVIEW.md` in context.
+  `implement-reviewer` writes one. Until a host has any, its manifest can name
+  `klein-sdlc:basic-reviewer` directly and run the generic lane.
 - **`.claude/docs/rules/`** and **`.claude/docs/practices/`** — the normative corpora
   findings are reported against. The plugin ships no rules, and no fallback: a lane whose
   corpus is missing says so and stops (`REVIEW.md` § Without a rules corpus). The lanes do
@@ -55,10 +64,11 @@ Read relative to the working directory, so they live in the host repo:
   `## Review checklist`, the practices README has a `§ What lint already enforces`
   section, `design.md` and `testing.md` exist under those names — and `templates/rules/`
   and `templates/practices/` are those shapes.
-- **`.claude/docs/review/<lane>.md`** — one catalogue per review lane: the invariants,
-  the auth-surface trigger paths, the greps, the sanctioned forms, and the arrangements
-  that read as wrong and are deliberate. `templates/review/README.md` says what a
-  catalogue holds and, more importantly, what it must not.
+- **`docs.reviewCatalogues`** — one catalogue per review lane, the file its manifest
+  entry names: the invariants, the trigger paths of a narrow-surface lane, the greps, the
+  sanctioned forms, and the arrangements that read as wrong and are deliberate.
+  `templates/review/README.md` says what a catalogue holds and, more importantly, what it
+  must not.
 - **`.claude/docs/rule-gaps.md`** — the ledger `full-review` appends gap findings to.
   `templates/rule-gaps.md` is its header.
 - **The QA catalogue** at `docs.qa` — which apps run where, how to sign in as each role
@@ -111,8 +121,9 @@ claude plugin marketplace add YevhenMalyi/klein-sdlc
 claude plugin install klein-sdlc@klein-sdlc
 ```
 
-Skills are namespaced: `/klein-sdlc:whats-next`, `/klein-sdlc:full-review`. Agents likewise:
-`klein-sdlc:security-reviewer`.
+Skills are namespaced: `/klein-sdlc:whats-next`, `/klein-sdlc:full-review`. The plugin's
+agents likewise: `klein-sdlc:finding-verifier`, `klein-sdlc:basic-reviewer`. A host's own
+lanes in `.claude/agents/` keep their bare names, and that is how the manifest names them.
 
 ## Evals and tests
 
@@ -122,7 +133,7 @@ Three tiers, cheapest first. `npm install` once for the two free ones.
 | :--- | :--- | :--- | :--- |
 | Scripts and schema | `npm test` and `npm run test:schema` | The board scripts fail loudly without a manifest or a key; every manifest we ship validates against `schema/sdlc.schema.json` | free |
 | Trigger | `npm run eval:trigger` | Each skill fires on a natural prompt for it, no other skill steals the prompt, and three non-workflow prompts fire nothing. One run per case, no baseline arm | about $1 |
-| Scenario | `npm run eval:scenario` | `full-review` on a fixture host with two planted defects: the correctness lane and the verifier are spawned by name, both defects are reported as `(blocking)`, and the report accounts for verification | about $1–2 |
+| Scenario | `npm run eval:scenario` | `full-review` on a fixture host with two planted defects: the lane the fixture's manifest declares (`klein-sdlc:basic-reviewer`, since an eval loads nothing from the fixture's `.claude/agents/`) and the verifier are spawned by name, both defects are reported as `(blocking)`, and the report accounts for verification | about $1–2 |
 
 Cases live under `evals/`, one directory each: `prompt.md` plus `graders/`, and for the
 scenario a `case.yaml`, a `scaffold.sh` that builds the fixture repo in the run directory,
@@ -157,9 +168,11 @@ Not automated yet. By hand, from `templates/`:
 3. `rules/README.md`, `rules/design.md`, and `rules/rule.md` once per area →
    `.claude/docs/rules/`. `practices/README.md` and `practices/practice.md` once per
    library → `.claude/docs/practices/`.
-4. `review/README.md` → `.claude/docs/review/README.md`; `review/lane.md` once per lane
-   and `review/security.md` → `.claude/docs/review/<lane>.md`, as the codebase's failure
-   shapes become known. A lane with no catalogue yet is skipped, not guessed.
+4. `review/README.md` → `.claude/docs/review/README.md`. Then the lanes, one at a time,
+   with `/klein-sdlc:implement-reviewer`: it writes the agent into `.claude/agents/`, the
+   catalogue from `review/lane.md` or `review/security.md`, and the manifest entry. Start
+   with the manifest naming `klein-sdlc:basic-reviewer` on an `"always"` trigger if the
+   first real lane is not ready. A lane with no catalogue is skipped, not guessed.
 5. `rule-gaps.md`, `qa-catalogue.md` and `ux-house-rules.md` → the paths the manifest names.
 6. `mcp.json` → `.mcp.json`, unless the host already runs `linear`, `github` and
    `playwright` under those names.

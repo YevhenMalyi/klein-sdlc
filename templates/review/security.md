@@ -1,9 +1,10 @@
 # Security catalogue
 
-Copy to `.claude/docs/review/security.md`. `security-reviewer` fires only when the diff
-touches a path listed below, asks one question — can an attacker or the wrong role reach
+Copy to `<docs.reviewCatalogues>/security.md`, the catalogue of a lane whose manifest
+entry says `"trigger": "catalogue"`. `security-reviewer` fires only when the diff touches
+a path listed below, asks one question — can an attacker or the wrong role reach
 something — and works the entries. `full-review` reads the trigger list from here rather
-than keeping a copy.
+than keeping a copy. Any lane on a narrow surface uses this shape.
 
 ## Trigger paths
 
@@ -39,6 +40,7 @@ a reference implementation to compare against.
 <grep>
 ```
 
-One overlap with `correctness-reviewer` is deliberate: an authorization check enforced at
-the edge and not in the service is on both catalogues. When both report it, that is the
-signal working, not a duplicate to dedupe.
+An overlap with another lane can be deliberate — an authorization check enforced at the
+edge and not in the service belongs on this catalogue and on an invariants lane's. Say so
+here, and in the other catalogue: when both report it, that is the signal working, not a
+duplicate to dedupe.
