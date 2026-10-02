@@ -50,14 +50,12 @@
     "reviewCatalogues": ".claude/docs/review"
   },
   "review": {
-    "lanes": {
-      "correctness": [
-        "src/"
-      ],
-      "frontendPractices": [
-        "src/"
-      ],
-      "backendPractices": []
-    }
+    "lanes": [
+      {
+        "agent": "klein-sdlc:basic-reviewer",
+        "catalogue": "basic.md",
+        "trigger": "always"
+      }
+    ]
   }
 }
