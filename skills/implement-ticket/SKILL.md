@@ -15,9 +15,9 @@ description: >-
 Takes a tracker ticket from "assigned" to "code written and verified on the base
 branch," and stops there. It does not create a branch, does not commit, and
 does not open a PR — that is [`commit-and-pr`](../commit-and-pr/SKILL.md)'s
-job, run separately once the user is happy with the diff. It does not run
-`structure-reviewer`, `frontend-practices-reviewer`, `backend-practices-reviewer`,
-or `manual-qa-engineer` either — those run when asked, same as any other task.
+job, run separately once the user is happy with the diff. It does not run the
+review lanes or `manual-qa-engineer` either — those run when asked, same as any
+other task.
 
 The project manifest — `tracker.*`, `forge.*` and `gates` below name values in it:
 
@@ -204,8 +204,8 @@ used. Then stop:
 - Don't move the ticket's status again — it stays `tracker.states.inProgress`
   until the user asks otherwise (`commit-and-pr` moves it to
   `tracker.states.inReview` when the PR opens).
-- Don't run `structure-reviewer`, `frontend-practices-reviewer`,
-  `backend-practices-reviewer`, or `manual-qa-engineer` unless asked.
+- Don't run the review lanes (`full-review`, or any lane on its own) or
+  `manual-qa-engineer` unless asked.
 
 ## Multiple tickets
 

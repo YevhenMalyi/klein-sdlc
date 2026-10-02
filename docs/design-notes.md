@@ -18,6 +18,7 @@ behind a table.
 | Rule detail       | the host's `.claude/docs/rules/`, `practices/` | On demand, per changed path        |
 | Lane catalogues   | the host's `.claude/docs/review/`              | By the lane that owns each         |
 | Skills            | `skills/*/SKILL.md`                            | Description always, body on invoke |
+| Review lanes      | the host's `.claude/agents/*.md`               | On delegate                        |
 | Subagents         | `agents/*.md`                                  | On delegate                        |
 
 The always-loaded core file is a routing table plus the invariants that fail _silently_,
@@ -60,14 +61,55 @@ name a value by its path rather than quoting it, because injection cannot be ski
 quoted value goes stale in every file that quotes it.
 
 The review lanes are split the same way. An agent file is the half that would be the same
-in any repo: what the lane owns, what it leaves to other lanes, its procedure and its
-severity vocabulary. The host's catalogue is the half that is not: the invariants, the
-auth-surface paths, the greps, the sanctioned forms, and the arrangements that read as
-wrong and are deliberate. A catalogue never records the current state of the code as a
+in any repo with that lane: what the lane owns, what it leaves to other lanes, its
+procedure and its severity vocabulary. The host's catalogue is the half that is not: the
+invariants, the auth-surface paths, the greps, the sanctioned forms, and the arrangements
+that read as wrong and are deliberate. Both halves live in the host — see § The lanes
+live in the host, below. A catalogue never records the current state of the code as a
 standing fact. Every such line is right on the day it is written and wrong on some later
 day nobody notices, and a lane that trusts it then reviews the code against a description
 of the code. A deliberate arrangement is a pointer to the doc that mandates it, checked
 each run.
+
+## The lanes live in the host
+
+The first release shipped six lane agents with the plugin and the orchestrator named them
+one by one. That put the wrong half of each lane on the wrong side of the seam. Which
+lanes a repo needs is a property of the repo: a backend-only service has no frontend
+practices lane, a repo with no auth surface has no security lane, and a repo whose
+architecture has one load-bearing invariant nobody else shares wants a lane for exactly
+that. Six fixed names could only be switched off, never added to, and a host that wanted
+a seventh had nowhere to put it that the orchestrator would see.
+
+So the plugin ships one lane, `basic-reviewer`, which reviews against whatever rules the
+host wrote down plus ordinary bugs, and is deliberately the boilerplate as well as a
+runnable agent. A host's lanes are copies of it, narrowed to one question each, in its
+own `.claude/agents/`, and its manifest lists them in the order the report should read.
+`full-review` walks that list; it knows no lane by name. `implement-reviewer` makes the
+copy, the catalogue and the manifest entry in one pass, so adding a lane costs what
+writing a catalogue always did.
+
+Two mechanics made this possible, both verified in a real session rather than from the
+docs. A host agent spawns by its bare name beside the plugin's, with no collision, since
+plugin agents carry the plugin prefix. And a host agent can preload a plugin skill, body
+and all, including that skill's dynamic injection: `REVIEW.md` reaches a host lane
+through `review-contract`, which injects the file at load time, so the host never copies
+the contract and never holds a path into the plugin. `${CLAUDE_PLUGIN_ROOT}` is not
+substituted inside a host agent, which is why the path could not simply be linked.
+
+The cost is the first adoption step: a new host writes its lanes rather than inheriting
+six. The plugin's own evals pay it too — an eval run loads nothing from the fixture's
+`.claude/agents/`, so the fixture's manifest names `klein-sdlc:basic-reviewer`, which is
+also what a fresh host does before its first real lane exists.
+
+Rejected: keeping the six as reference templates under the plugin. One boilerplate that is
+also a working lane is simpler to keep correct than seven files, and a host that wants a
+structure lane writes a better one from its own rules than from a generic copy.
+
+What the contract keeps is therefore lane-independent: the bit, the gap rule, the bars a
+blocking tier must clear, the procedure, verification and convergence. Each lane's own
+severity table says which of its tiers block, and that column is the only place the
+default lives.
 
 ## The blocking bit, and why there is no cap
 
@@ -152,11 +194,13 @@ way it goes, record it in this file rather than quietly keeping or dropping the 
 
 A built-in security command cannot occupy a lane: it is not a subagent the orchestrator
 can spawn, it re-derives its own target, and it reports against none of this contract. So
-security is a lane of its own with `hole` / `weakening` / `exposure gap`, and a `hole` earns
-its blocking bit by walking the path in: which caller, which asset, under what conditions.
+a host with an auth surface declares a security lane of its own — `hole` / `weakening` /
+`exposure gap`, where a `hole` earns its blocking bit by walking the path in: which caller,
+which asset, under what conditions.
 
 Its trigger is a short list of specific files and narrow globs in the host's catalogue,
-not a whole tree. Narrowness is what keeps a specialist lane worth reading: volume stays
+not a whole tree — the manifest's `"catalogue"` trigger, which any narrow-surface lane
+can use. Narrowness is what keeps a specialist lane worth reading: volume stays
 low, so its findings keep their credibility. The list lives in one place, the catalogue,
 and the orchestrator points at it rather than keeping a copy. One overlap with the
 correctness lane is deliberate: an authorization check enforced in a router and not in the

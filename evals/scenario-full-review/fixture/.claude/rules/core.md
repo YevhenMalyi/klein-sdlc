@@ -7,4 +7,4 @@ touch before writing.
 | ------------------- | ------------------------------------------------- |
 | `src/pages/**`      | [`data-loading.md`](../docs/rules/data-loading.md) |
 
-Project names live in `.claude/sdlc.json`; the `klein-sdlc` plugin's skills inject it.
+Project names and the review lanes live in `.claude/sdlc.json`; the `klein-sdlc` plugin's skills inject it.

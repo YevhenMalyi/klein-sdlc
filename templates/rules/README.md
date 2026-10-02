@@ -22,17 +22,18 @@ cover.
 The review lanes depend on two things being true of every file here:
 
 - **It ends with a `## Review checklist`**, written to be greppable: one line per failure
-  shape, phrased as what the code does. `structure-reviewer` works these in full for each
+  shape, phrased as what the code does. A conformance lane works these in full for each
   file the diff's paths route to. `templates/rules/rule.md` in the plugin is the skeleton.
 - **It states its exceptions next to the rule.** A lane applies a rule without its
   exception and reports a false positive, and false positives are what stop review output
   being read.
 
-Two files are named by the plugin and must exist under those names:
+Two files are read by name:
 
-- **`design.md`** — `design-reviewer`'s rulebook. It needs three sections in this order:
-  what the placement rules already decide (so design does not re-review it), `## Judgment`,
-  and `## Review checklist`. `templates/rules/design.md` is the skeleton.
 - **`testing.md`** — where tests live and whether they travel with a feature or land in
-  dedicated passes. `implement-ticket`, `commit-and-pr` and `correctness-reviewer` read it
-  to decide whether "no new tests" is the right answer.
+  dedicated passes. `implement-ticket` and `commit-and-pr` in the plugin read it to decide
+  whether "no new tests" is the right answer, and so does a lane that flags missing tests.
+- **`design.md`** — the rulebook of a design lane, if this repo declares one. It needs
+  three sections in this order: what the placement rules already decide (so design does
+  not re-review it), `## Judgment`, and `## Review checklist`. `templates/rules/design.md`
+  is the skeleton.

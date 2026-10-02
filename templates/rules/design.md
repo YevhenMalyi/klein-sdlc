@@ -1,13 +1,13 @@
 # Rule: Design and responsibility
 
-Copy to `.claude/docs/rules/design.md`. `design-reviewer` reads this file in full, every
+Copy to `.claude/docs/rules/design.md`. The design lane reads this file in full, every
 run, and works from it rather than from general SOLID knowledge. Three sections are
 required, in this order.
 
 ## What the structure rules already decide — do not re-review it
 
-The list that keeps the design lane signal-dense. Everything here is
-`structure-reviewer`'s: placement, naming, import direction, barrels, file layout. Name
+The list that keeps the design lane signal-dense. Everything here is the placement
+lane's: placement, naming, import direction, barrels, file layout. Name
 each with the rule file that owns it, so a design finding on one of them is recognised as
 another lane's and dropped.
 

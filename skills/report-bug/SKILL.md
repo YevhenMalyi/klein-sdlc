@@ -53,7 +53,7 @@ hearing the reason, that is their call on the record, and you proceed.
 | Where it came from                                                                  | Path                   |
 | :---------------------------------------------------------------------------------- | :--------------------- |
 | The user hit it and is describing it                                                | **A — interview**      |
-| You found it: a `correctness-reviewer` finding, a failing check, something mid-task   | **B — draft directly** |
+| You found it: a review-lane finding, a failing check, something mid-task             | **B — draft directly** |
 
 They differ only at the start. Both converge on the same report, the same confirmation, and
 the same publish.

@@ -77,17 +77,18 @@ What's checked in:
 | `TRACKING.md` (plugin)                                           | The tracking contract — what a spec, story, task and bug are, and what a priority means               |
 | [`.claude/docs/review/`](.claude/docs/review/README.md)            | One catalogue per review lane: this repo's invariants, auth surface, greps and sanctioned forms       |
 | `klein-sdlc` skills (plugin)                                        | The workflow skills, namespaced `/klein-sdlc:<name>`, including the five Part 3 uses                    |
-| `klein-sdlc` agents (plugin)                                        | Eight subagents — six review lanes, plus `finding-verifier` and `manual-qa-engineer`                  |
+| `.claude/agents/` (host)                                            | The review lanes: one subagent each, declared in `review.lanes` of the manifest, cut from the plugin's `basic-reviewer` |
+| `klein-sdlc` agents (plugin)                                        | `basic-reviewer`, the lane boilerplate; `finding-verifier`; `manual-qa-engineer`                       |
 | [`.claude/docs/rule-gaps.md`](.claude/docs/rule-gaps.md)           | Candidate rules a review raised and nobody has ruled on yet                                           |
 | `.mcp.json`                                                      | The MCP servers the host connects always — the tracker and forge at minimum                          |
 
 Two points that save a newcomer from guessing wrong:
 
-- **The six review lanes are the whole review.** Structure, design, correctness,
-  frontend practices, backend practices, security. They run in parallel because
+- **The declared lanes are the whole review.** Read `review.lanes` in the manifest
+  and name them — this repo's, not a fixed set. They run in parallel because
   none reads another's output, and every finding goes past `finding-verifier` in
   fresh context before it reaches the report. `full-review` orchestrates them; it
-  reviews nothing itself.
+  reviews nothing itself. A new lane is `/klein-sdlc:implement-reviewer`.
 - **Whether tests travel with a change is the host's rule, not the plugin's.**
   Read [`testing.md`](.claude/docs/rules/testing.md) and say what it says —
   some hosts write tests in dedicated passes, where "no new tests" is the
@@ -96,8 +97,8 @@ Two points that save a newcomer from guessing wrong:
 
 **Say only what is true of this repo.** Before presenting the table, check that
 each host piece exists, and report what is missing or marked unwritten — a
-lane with no catalogue is skipped, and a newcomer should hear that from you
-rather than from an empty review.
+lane whose catalogue or agent file is missing is skipped, and a newcomer should
+hear that from you rather than from an empty review.
 
 The long-form reasoning — why each lane exists, what was rejected, what is still
 on probation — ships with the plugin:
@@ -210,7 +211,7 @@ against a different filter:
 | One app, one layer                        | The diff stays readable, and the review comes back short                |
 | Real acceptance criteria                  | AC is the spec; a ticket without them turns step 3 into a design session |
 | A visible UI surface                      | Step 5 is a browser pass — a pure backend ticket makes it a no-op        |
-| Nothing on the auth surface               | A first PR should not be the one that wakes `security-reviewer`          |
+| Nothing on a narrow-trigger surface       | A first PR should not be the one that wakes a catalogue-triggered lane   |
 | Unblocked, and small                      | Well under the repo's median PR size                                    |
 
 If nothing in the proposal fits, say so and ask them to widen — do not talk them

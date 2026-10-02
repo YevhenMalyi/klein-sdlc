@@ -18,16 +18,18 @@ tracks upstream and goes stale on a major version bump.
 | Designing a unit: a function, hook, props type, payload | [`design.md`](../docs/rules/design.md)         |
 | Any test file                     | [`testing.md`](../docs/rules/testing.md)                             |
 
-This table is the one copy of the path → file mapping. `structure-reviewer` and
+This table is the one copy of the path → file mapping. The conformance lanes and
 `implement-ticket` read it; do not duplicate it elsewhere.
 
-Reviewing a diff: `REVIEW.md` in the `klein-sdlc` plugin, the review contract, and the six
-`*-reviewer` subagents it governs.
+Reviewing a diff: `/klein-sdlc:full-review`, whose contract is `REVIEW.md` in the
+`klein-sdlc` plugin. The lanes it runs are this repo's: `review.lanes` in `../sdlc.json`
+names them, their agent files are `../agents/`, and what each looks for **in this repo** is
+`../docs/review/`. A new lane is `/klein-sdlc:implement-reviewer`.
 
 **Project names live in [`../sdlc.json`](../sdlc.json)** — the tracker's team, project,
 issue prefix, states and labels; the forge's owner, repo, base branch, branch pattern and
-scope labels; the verification gates; the commit scopes; the paths of the instance docs. A
-workflow skill injects that file at load time and names a value by its path
+scope labels; the verification gates; the commit scopes; the paths of the instance docs;
+the review lanes, their catalogues and triggers. A workflow skill injects that file at load time and names a value by its path
 (`tracker.states.inReview`) rather than quoting it. Change the value there, never in a
 skill.
 
