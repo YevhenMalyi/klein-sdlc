@@ -63,10 +63,14 @@
     "uxHouseRules": ".claude/docs/ux-house-rules.md"
   },
   "review": {
-    "lanes": {
-      "correctness": ["apps/", "packages/"],
-      "frontendPractices": ["apps/web/"],
-      "backendPractices": ["apps/api/"]
-    }
+    "$comment": "One entry per lane, in spawn and report order. `agent` is a subagent in .claude/agents/ cut from the plugin's basic-reviewer by implement-reviewer, or the plugin's own klein-sdlc:basic-reviewer before any exists. `catalogue` is a file under docs.reviewCatalogues. `trigger` is \"always\", a list of path prefixes, or \"catalogue\" for the trigger list the catalogue carries.",
+    "lanes": [
+      { "agent": "security-reviewer", "catalogue": "security.md", "trigger": "catalogue" },
+      { "agent": "correctness-reviewer", "catalogue": "correctness.md", "trigger": ["apps/", "packages/"], "optionalCatalogue": true },
+      { "agent": "structure-reviewer", "catalogue": "structure.md", "trigger": "always" },
+      { "agent": "design-reviewer", "catalogue": "design.md", "trigger": "always" },
+      { "agent": "frontend-practices-reviewer", "catalogue": "frontend-practices.md", "trigger": ["apps/web/"] },
+      { "agent": "backend-practices-reviewer", "catalogue": "backend-practices.md", "trigger": ["apps/api/"] }
+    ]
   }
 }
