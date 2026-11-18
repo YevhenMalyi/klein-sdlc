@@ -191,8 +191,12 @@ Run every command in `gates`, in order, each to completion.
 
 Abort and fix on any failure — don't relax a rule to get green, and don't
 report a command as passing that wasn't run. For a frontend-visible change,
-check it in a running browser per the host's own verification rule — but
-don't start a dev server unasked; only drive it if the apps are already up.
+check it in a running browser per the host's own verification rule. Use an app
+that is already up if the QA catalogue's health check (`docs.qa` § Starting the
+app) finds one; otherwise start it with the catalogue's launch command in the
+background, and stop it once the check is done. Never stop a server you did not
+start. A launch that fails, or a catalogue with no launch command, is reported,
+not worked around.
 
 ### 8 — Stop and report
 
