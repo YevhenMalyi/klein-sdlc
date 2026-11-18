@@ -378,6 +378,12 @@ app asked the user to start it. That is lifted everywhere at once — `implement
 check finds, otherwise start it with the catalogue's launch command, and stop only what
 you started. The user's own server is never killed.
 
+The plan never passes through the orchestrator's context: the architect writes it to the
+run directory and returns a summary, and reviews travel as file paths. The orchestrator is
+the context that must last to the last merge, so it holds pointers, not documents. The
+same reasoning keeps `babysit`'s CI watch, failed logs and comment fetches filtered to
+what it acts on.
+
 Rejected: a Workflow script (deterministic, but it runs in the background, which makes the
 approval stops awkward, and it costs more); developers in worktrees (isolation bought with
 a merge-back); fully autonomous by default (a plan or a commit the user has not seen).
@@ -406,4 +412,32 @@ were rejected: each needs retargeting after the one below it merges, and a babys
 merging in order would have to manage that. A piece that won't split along a clean seam
 stays whole and says it is oversized. Only the last PR of a ticket's set says `Fixes`; the
 rest say `Refs`, so the ticket closes when the work is whole.
+
+## Untracked files are part of the diff
+
+`full-review` reviewed `git diff base...HEAD` plus `git diff HEAD`, and neither shows an
+untracked file. A new file nobody had staged — which is every new file `implement-ticket`
+and `deliver-ticket` write, since neither commits — reached no lane. The orchestrator now
+appends each untracked file as a diff against `/dev/null`, and a lane resolving its own
+diff reads every `??` file in `git status` whole. `git add -N` would have put them in
+`git diff` too, but it writes to the index, and `commit-and-pr` stages and stashes by
+index later.
+
+## Fixed paths and manifest keys
+
+`.claude/rules/core.md`, `.claude/docs/rules/`, `.claude/docs/practices/` and
+`.claude/docs/rule-gaps.md` are read at fixed paths throughout, while the manifest carried
+`docs.rules` and `docs.practices` as if they could vary. They could not: a host that set
+another value would have had every lane read the wrong place without a word. Rewiring the
+whole plugin to the keys was rejected — `core.md` cannot move anyway, since Claude Code
+loads `.claude/rules/` from where it is, and no host has needed another location. The
+schema now pins the two keys to their fixed values, so a host that sets anything else
+fails validation instead of failing silently.
+
+## Descriptions are paid on every turn
+
+A skill's or agent's description is in context in every session, whether it fires or not.
+So it says what the thing does and the phrases that should trigger it, and nothing else:
+not the procedure, not the flags, not which other skill spawns an agent. `deliver-ticket`'s
+first description ran past the 1,024-character limit by listing its phases and flags.
 
