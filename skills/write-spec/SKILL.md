@@ -9,9 +9,7 @@ description: >-
   functionality vaguely enough that building from it directly would be guessing. Covers
   the reverse case too — backfilling an as-built spec for what already ships ("document
   what we've built", "backfill specs"), read out of the code rather than interviewed.
-  `--decide` (or "don't stop for answers") takes its own recommendation wherever it can,
-  asks only what only the user can answer, and ends with a review listing every question
-  and answer.
+  Supports `--decide` ("don't stop for answers").
 ---
 
 # Writing a spec

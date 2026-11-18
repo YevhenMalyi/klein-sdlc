@@ -8,9 +8,8 @@ description: >-
   this spec", "review the spec for UX", "check this against best practices", "does this
   actually work for the user", or before breaking a spec into stories. Against an
   as-built spec the same review runs, but the findings describe the shipped product, so
-  they leave as bugs rather than as patches to the document. `--decide` (or "don't stop
-  for answers") takes its own recommendation on each finding, asks only what overturns the
-  client's stated wish, and ends with a review listing every finding and its resolution.
+  they leave as bugs rather than as patches to the document.
+  Supports `--decide` ("don't stop for answers").
 ---
 
 # Refining a spec

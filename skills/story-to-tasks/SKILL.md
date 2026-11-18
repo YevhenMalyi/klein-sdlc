@@ -11,14 +11,9 @@ description: >-
 
 # Story to tasks
 
-Turns **one** story into tasks. Run it when someone is about to start that story — not
-before, and never for a whole spec's worth of stories at once.
-
-That timing is the tracking convention, not a preference: _"Don't create tasks for a story
-until you are about to start it. A story with acceptance criteria and no sub-issues is a
-complete backlog item."_ Sub-issues created up front are stale by the time anyone opens
-them. Read [`TRACKING.md`](${CLAUDE_PLUGIN_ROOT}/TRACKING.md) if you have not — § Priority
-in particular, because every task gets one.
+Turns **one** story into tasks, when someone is about to start it — never a whole spec's
+worth at once ([`TRACKING.md`](${CLAUDE_PLUGIN_ROOT}/TRACKING.md); read it if you have not,
+§ Priority in particular, because every task gets one).
 
 The project manifest — `tracker.*` below names values in it:
 

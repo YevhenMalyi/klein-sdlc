@@ -24,12 +24,9 @@ ships, so there is no work in it to slice. Stop and say so. If the user wants is
 it, what they want is [`refine-spec`](../refine-spec/SKILL.md), which files the gaps it
 finds as bugs — not stories reconstructing work that is already done.
 
-**Stories only, never their tasks.** Breaking a story into tasks is
-[`story-to-tasks`](../story-to-tasks/SKILL.md), run when someone is about to start that
-story. The split is the tracking convention, not a preference: _"Don't create tasks for a
-story until you are about to start it. A story with acceptance criteria and no sub-issues
-is a complete backlog item."_ Creating the whole graph up front produces sub-issues that
-are stale by the time anyone opens them, so this skill never offers to continue into tasks.
+**Stories only, never their tasks.** Tasks are [`story-to-tasks`](../story-to-tasks/SKILL.md),
+run only when someone is about to start that story (`TRACKING.md`) — so never offer to
+continue into them.
 
 The project manifest — `tracker.*` below names values in it:
 

@@ -1,6 +1,6 @@
 ---
 name: commit-and-pr
-description: End-to-end workflow for committing branch changes and opening PRs. Encapsulates splitting the work into review-sized PRs (Claude docs always apart from code), branch separation by concern, conventional commits via the craft-commits skill, Linear issue wiring, an embedded PR body template, a local git push, GitHub MCP PR creation, and the standard assignee+label workflow. Use when the user says "commit and create PR", "ship this branch", "push and open PR", "commit these changes and create PRs", or after completing implementation work that needs to land on GitHub.
+description: End-to-end workflow for committing branch changes and opening PRs. Encapsulates splitting the work into review-sized PRs, branch separation by concern, conventional commits via the craft-commits skill, Linear issue wiring, an embedded PR body template, a local git push, GitHub MCP PR creation, and the standard assignee+label workflow. Use when the user says "commit and create PR", "ship this branch", "push and open PR", "commit these changes and create PRs", or after completing implementation work that needs to land on GitHub.
 ---
 
 # Commit and Create PRs
@@ -73,15 +73,12 @@ budget.** Three mixed concerns in the working tree means at least three branches
 three PRs.
 
 **The review budget: about 400 changed lines and about 15 files per PR**, not counting
-the exempt files above. Past that, review quality drops sharply — reviewers skim rather
-than read. The budget is a target, not a gate: a PR slightly over it that cannot be cut
+the exempt files above. It is a target, not a gate: a PR slightly over it that cannot be cut
 cleanly is better than two PRs that don't each make sense.
 
 **Split in this order, and stop as soon as every piece fits:**
 
-1. **Claude docs apart from code — always**, even when both are small. `.claude/**`
-   changes are a different review (is the rule right?) from the code (does it follow the
-   rule?), and they are read by different people.
+1. **Claude docs apart from code — always**, even when both are small.
 2. **Prefactor / refactor** the feature builds on, ahead of the feature.
 3. **Contract / schema** — shared types, the API contract, migrations.
 4. **The feature by layer** — backend, then each app — when it is still over budget.

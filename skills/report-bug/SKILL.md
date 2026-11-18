@@ -194,10 +194,8 @@ Then offer the investigation pass in one line. Don't start it unasked.
 Separate, opt-in, and it does **not** fix anything.
 
 1. **Reproduce it first, if you can.** For a UI bug a browser MCP such as `playwright`
-   drives the running app. Reuse one the QA catalogue's health check (`docs.qa` § Starting
-   the app) finds; otherwise start it with the catalogue's launch command, and stop it once
-   you have reproduced the bug. Never stop a server you did not start. No launch command,
-   or a launch that fails: say so and investigate from the code.
+   drives the running app, reused or started per `docs.qa` § Starting the app; stop only a
+   server you started. If it can't be started, say so and investigate from the code.
 2. **Read the rules for the area before calling anything broken.** Behaviour that looks
    wrong is sometimes the architecture working as designed. When code and a rule disagree,
    that is a finding about which one should change, and it is the repo owner's call — not

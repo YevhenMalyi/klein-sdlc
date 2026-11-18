@@ -14,9 +14,8 @@ the agent stops if it cannot find it.
 
 ## Starting the app
 
-What everything that drives the app — `manual-qa-engineer`, `deliver-ticket`,
-`implement-ticket`, `report-bug`, `onboarding` — needs to reuse a running instance or start
-one. Each stops only a server it started itself.
+How anything that drives the app reuses a running instance or starts one. Whatever starts
+a server stops only that one, and never one it found running.
 
 - **Health check.** A request that tells *this* app apart from whatever else holds the port
   (`GET http://localhost:<port>/<path>` answering `<body>`). A port that answers anything
