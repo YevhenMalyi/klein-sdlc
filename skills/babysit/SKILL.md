@@ -1,14 +1,11 @@
 ---
 name: babysit
 description: >-
-  Looks after one open pull request until it is merged: brings it up to date with the base
-  branch and resolves merge conflicts, waits for CI and fixes what fails (or runs the
-  manifest's gates when the repo has no CI), works every unresolved review comment, and the
-  moment the PR is ready squash-merges it, deletes its branch, returns to the base branch
-  and moves the ticket to Done when the PR closes it. Use when the user says "babysit PR #NN", "babysit this PR",
-  "watch the PR and merge it", "get #NN green and merged", or right after `commit-and-pr`
-  opened a PR that should land. Invoking it is the ask to push fixes and to merge.
-  `--decide` takes its own recommendation where it would stop to ask.
+  Looks after one open PR until it is merged: up to date with the base branch, CI green
+  (or the gates), review comments worked, then squash-merged. Invoking it is the ask to
+  push fixes and merge; supports `--decide`. Use when the user says "babysit PR #NN",
+  "watch the PR and merge it", "get #NN green and merged", or right after commit-and-pr
+  opened a PR that should land.
 ---
 
 # Babysit a pull request
@@ -21,6 +18,9 @@ The project manifest — `tracker.*`, `forge.*`, `gates`, `gatesNote` and `commi
 name values in it:
 
 !`cat .claude/sdlc.json`
+
+If no manifest appears above — the injection does not run in every way this skill can be
+loaded — read `.claude/sdlc.json` before step 0.
 
 ## Arguments
 
@@ -101,10 +101,15 @@ once every gate passes (step 3 runs them before the push).
 
 - **No checks at all** (the repo has no CI, or none runs on this PR): the gates are the
   checks — step 3.
-- **Pending:** `gh pr checks <n> --watch --fail-fast --interval 30` with the Bash timeout
-  at its maximum; repeat until settled or the 60-minute wait cap is hit. A check that
+- **Pending:** wait silently, then read the result once —
+  `gh pr checks <n> --watch --fail-fast --interval 30 >/dev/null 2>&1; gh pr checks <n> --json name,bucket,link`
+  — with the Bash timeout at its maximum; repeat until settled or the 60-minute wait cap is
+  hit. The watch reprints the whole table every 30 seconds; never let that reach your
+  context. A check that
   never starts (queued for the whole wait): stop and report it.
-- **Failed:** `gh run view <run id> --log-failed` for each failed job. Reproduce locally
+- **Failed:** for each failed job, `gh run view <run id> --log-failed > "$LOG"` (a
+  `mktemp` file, outside the repo), then read only its tail (`tail -n 150 "$LOG"`) or grep
+  it for the failing assertion — a failed log runs to thousands of lines. Reproduce locally
   with the matching command from `gates` when there is one, fix the cause, then step 3. A
   failure that is infrastructure, not code (runner lost, network, rate limit):
   `gh run rerun <run id> --failed` once; a second infrastructure failure stops the run.
@@ -118,7 +123,8 @@ in `gates`, in order, each to completion (`gatesNote` says what each carries). A
 is fixed and the gates rerun from the top; this counts as a fix round.
 
 Commit a fix as a Conventional Commit `type(scope): description`, the scope from
-`commits.scopes`, a body that says why, and the trailer `Refs: <ticket>`. Stage named
+`commits.scopes`, a body that says why, and the commit trailer `Refs: <ticket>` (the git-trailer form `craft-commits` uses; the PR
+body's closing line in step 6 is a different thing). Stage named
 files only — never `git add -A` or `git add .`. Then `git push` (the way `forge.pushVia`
 says). Go back to step 1: the base may have moved while you worked, and the new head needs
 its own checks.
@@ -131,11 +137,22 @@ Unresolved threads:
 gh api graphql -F owner=<forge.owner> -F repo=<forge.repo> -F n=<n> -f query='
 query($owner:String!,$repo:String!,$n:Int!){repository(owner:$owner,name:$repo){
 pullRequest(number:$n){reviewDecision reviewThreads(first:100){nodes{id isResolved
-isOutdated path line comments(first:20){nodes{author{login} body url}}}}}}}'
+isOutdated path line comments(first:20){nodes{author{login} body url}}}}}}}' \
+  --jq '.data.repository.pullRequest | {reviewDecision,
+        threads: [.reviewThreads.nodes[] | select(.isResolved | not)]}'
 ```
 
-plus the PR's top-level comments and reviews (`gh pr view <n> --comments`). For each
-unresolved thread and each actionable comment since the last push:
+plus the PR's top-level comments and reviews, without the bodies of bot summaries you
+don't need:
+
+```bash
+gh pr view <n> --json comments,reviews --jq '[(.comments[] | {author: .author.login,
+  at: .createdAt, body}), (.reviews[] | {author: .author.login, at: .submittedAt,
+  state, body})] | map(select(.body != ""))'
+```
+
+Work each unresolved thread, and each actionable comment that arrived after your last
+push:
 
 - **Valid:** fix it (step 3), reply on the thread with the commit that fixed it, and
   resolve the thread (`resolveReviewThread`).
@@ -171,7 +188,7 @@ removes the remote and local branch and checks out the base branch; finish with
 
 ## 6 — Ticket
 
-With a ticket, look at the PR body's trailer. `Refs <ticket>` means the PR is one of
+With a ticket, look at the PR body's closing line — the forge keyword, no colon. `Refs <ticket>` means the PR is one of
 several `commit-and-pr` split the ticket into and not the last: leave the ticket where it
 is. `Fixes`, `Closes` or `Resolves <ticket>`: fetch it; already `tracker.states.done` (the
 forge integration may have moved it on merge) — leave it. Otherwise move it to
