@@ -1,12 +1,9 @@
 ---
 name: developer
 description: >-
-  Implements one unit of an approved plan, editing only the files that unit owns, with the
-  tests the plan names; or fixes a given list of review, gate or QA findings in files it
-  owns. Works in the shared checkout alongside other developers, so it never touches a
-  file outside its ownership and never runs git commands that change state. The generic
-  developer role deliver-ticket spawns unless the manifest's roles.developer names the
-  host's own; not for open-ended implementation without a plan — that is implement-ticket.
+  Implements one unit of an approved plan in the files that unit owns, or fixes a given
+  list of findings in them, in a checkout shared with other developers. Not for open-ended
+  implementation without a plan — that is implement-ticket.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: inherit
 ---

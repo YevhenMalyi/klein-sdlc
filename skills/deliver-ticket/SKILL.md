@@ -1,20 +1,12 @@
 ---
 name: deliver-ticket
 description: >-
-  Takes one tracker ticket from its number to a merged pull request through a team of
-  agents: an architect plans it, a fresh plan reviewer checks the plan and the architect
-  revises, developers build the plan's units in parallel, the full review runs and
-  developers fix what it confirms, manual QA exercises any UI that changed (starting the
-  app the way the QA catalogue says when it is not running), commit-and-pr opens the PRs,
-  and the babysitter gets each one green and merges it. Each role is the host's own agent
-  when the manifest's `roles` names one, the plugin's generic agent otherwise. Stops for
-  approval after the plan and before the commit unless told not to (`--no-stops`,
-  `--no-plan-stop`, `--no-commit-stop`); the commit approval also approves the merge.
-  `--decide` takes its own recommendation at every decision instead of asking, stops only
-  for what needs the user, and reports every decision in the PR and the chat. Use when the
-  user says "deliver <prefix>-XX", "run the full flow on <prefix>-XX", "take <prefix>-XX to
-  a PR", "ship <prefix>-XX", or wants a ticket planned, built, reviewed, shipped and merged
-  end to end. For a small, mechanical ticket, implement-ticket is cheaper.
+  Takes one tracker ticket from its number to merged PRs through an agent team: architect
+  plan, plan review, parallel developers, full review, QA, commit-and-pr, babysitter.
+  Stops after the plan and before the commit unless told not to; supports `--decide`. Use
+  when the user says "deliver <prefix>-XX", "ship <prefix>-XX", "take <prefix>-XX to a PR",
+  or "run the full flow on <prefix>-XX". For a small, mechanical ticket, implement-ticket
+  is cheaper.
 ---
 
 # Deliver a ticket
@@ -62,29 +54,27 @@ verifier is always `klein-sdlc:finding-verifier`.
 Plain words count as the flags: "don't stop", "run it through without asking me", "decide
 for yourself" is `--decide`.
 
-**A skipped stop is not a licence to ship a known problem.** These stop the run whatever
-the flags say: an open question in the plan, a `blocking` plan finding left after the
-revision cap, a gate still failing, a `(blocking)` review finding left after the fix cap,
-a QA defect left after its fix, a developer reporting it is blocked, a dirty tree at
-the start, or the babysitter stopping short of a merge. Under `--decide`, the ones that
-wait on a decision are taken instead (§ Decide mode); the rest still stop.
+## When the run stops
+
+The one place the stop conditions live; the phases point here. ✋ stops, ▶ goes on.
+
+| Condition | Default | `--no-stops` | `--decide` |
+| --- | --- | --- | --- |
+| Plan approval (phase 3) | ✋ | ▶ | ▶ |
+| Commit approval (phase 9) — also approves the merge | ✋ | ▶ | ▶ |
+| The plan's open questions (phase 3) | ✋ | ✋ | ▶ the architect's recommendation |
+| A plan finding still open after the cap (phase 2) | ✋ | ✋ | ▶ the side citing a rule or a criterion; with both or neither, the reviewer's |
+| A developer blocked by a gap in the plan (phase 4) | ✋ | ✋ | ▶ the architect amends the plan, once per gap; a second block on it ✋ |
+| A finding that the change disagrees with the ticket or spec (phase 7) | ✋ | ✋ | ▶ the spec's reading; where it is silent, the narrower one — never wider scope |
+| The babysitter's decision stops (phase 10) | ✋ | ✋ | ▶ as `babysit` § Decide mode says |
+| A dirty tree, an open blocker, someone else assigned, a branch already named for the ticket, an expired login, an app that cannot start, a human `CHANGES_REQUESTED` | ✋ | ✋ | ✋ |
+| A failure left after its cap: a gate, a `(blocking)` finding, a QA defect, red CI, a babysitter short of merging | ✋ | ✋ | ✋ |
+| A developer blocked for any other reason; a file changed outside its unit's ownership; a review finding no unit owns | ✋ | ✋ | ✋ |
+
+The last three rows stop under every flag: a skipped stop is never a licence to ship a
+known problem.
 
 ## Decide mode (`--decide`)
-
-The run blocks only when it needs something from the user that no agent can do: a dirty
-tree, an open blocker, the ticket assigned to someone else, a branch already named for
-the ticket, a login or permission that has expired, an app that cannot start, a human
-reviewer's `CHANGES_REQUESTED` — and a failure left after its cap (a gate, a `(blocking)`
-finding, a QA defect, red CI), because a decision can be taken for the user and a known
-break cannot be shipped for them. Everything else that would stop to ask is decided:
-
-| Decision point                                     | Taken as                                                                               |
-| -------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| The plan's `Open questions` (phase 3)              | the architect's recommendation                                                         |
-| A plan finding still open after the cap (phase 2)  | the side whose citation is a rule or a criterion; with both or neither, the reviewer's |
-| A developer blocked by a gap in the plan (phase 4) | the architect amends the plan (owner, file, choice); the developer resumes             |
-| A finding that the change disagrees with the spec (phase 7) | the reading the spec states; where it is silent, the narrower one — never wider scope |
-| The babysitter's decision stops (phase 10)         | as the `babysit` skill's § Decide mode says                                            |
 
 **The rules corpus still binds.** A decision never overrides the host's rules, an entry in
 its decision log or an acceptance criterion; an option that would needs the user, and
@@ -142,29 +132,27 @@ Never inside the repository. It holds `plan.md`, `plan-review-<n>.md`, the gate 
 
 ## 1 — Plan
 
-Spawn the architect with the ticket id and `$RUN`. Save its final message to
-`$RUN/plan.md`. **Keep its agent id** — phase 2 sends the review back to the same agent so
-it revises with its context intact.
+Spawn the architect with the ticket id and the plan path, `$RUN/plan.md`; it writes the
+plan there and replies with a summary. **Keep its agent id** — phase 2 sends the review
+back to the same agent so it revises with its context intact.
 
 ## 2 — Review the plan, revise, review again
 
 1. Spawn the plan reviewer — fresh, given the ticket id and `$RUN/plan.md`, and nothing of
    the architect's reasoning. Save to `$RUN/plan-review-1.md`.
-2. `approve` → phase 3. `revise` → `SendMessage` the review to the architect; save the
-   returned plan over `$RUN/plan.md`.
+2. `approve` → phase 3. `revise` → `SendMessage` the architect the review's path; it
+   rewrites `$RUN/plan.md`.
 3. Continue the **same** plan reviewer with `SendMessage` for the second review. Still
-   `revise` after the second revision → stop, show the open findings. Under `--decide`,
-   decide each open finding, send the decisions to the architect to fold in, and go on
-   without a third review.
+   `revise` after the second revision → § When the run stops; findings decided under
+   `--decide` go to the architect to fold in, with no third review.
 
 ## 3 — Stop: approve the plan
 
 Show the plan's `Criteria`, `Units` (owners and dependencies), `Records` and `Open
-questions`, and the plan review's outcome. Open questions stop the run whatever the flags
-— except under `--decide`, where each is taken as the architect recommended, logged, and
-sent back for the architect to move from `Open questions` into the units. Otherwise wait
-for approval unless `--no-plan-stop`. A change the user asks for goes back to the
-architect, and through one more plan review only if it changes `Units`.
+questions`, and the plan review's outcome, then stop or go on per § When the run stops.
+Open questions decided under `--decide` go back to the architect to move into the units. A
+change the user asks for goes back to the architect, and through one more plan review only
+if it changes `Units`.
 
 ## 4 — Build
 
@@ -172,11 +160,10 @@ Order the units by `Depends on`. Each wave is every unit whose dependencies are 
 spawn one developer per unit **in a single message**, each given `$RUN/plan.md` and its
 unit id. Keep every developer's agent id; the fix phases route by ownership to them.
 
-When a wave returns, check `git status --short` against the plan: a changed file no unit
-owns, or owned by a unit other than the one that changed it, stops the run. A developer
-that reports itself blocked stops the run; under `--decide`, a block that is a gap in the
-plan goes to the architect for an amendment and the developer resumes on it, once per
-block — a second block on the same gap stops.
+When a wave returns, check `git status --short` against the plan: every changed file must
+belong to the unit that changed it. A file outside that, or a developer reporting itself
+blocked: § When the run stops. A plan gap decided under `--decide` goes to the architect
+for an amendment, and the developer resumes on it.
 
 ## 5 — Gates
 
@@ -187,16 +174,15 @@ parallel; rerun the gates. Two rounds, then stop.
 ## 6 — Full review
 
 Run the [`full-review`](../full-review/SKILL.md) skill on the working tree against
-`forge.baseBranch`. **Tell it the ticket id**, and that every lane's prompt carries it:
-the work is still on the base branch, so the branch name cannot supply it, and a host lane
-that checks the diff against the ticket needs it.
+`forge.baseBranch`, and **give it the ticket id** — the work is uncommitted on the base
+branch, so no branch name carries it.
 
 ## 7 — Fix and re-review
 
 Send each confirmed `(blocking)` finding to the developer owning its file; `(if-minor)`
 ones too when the fix is local to a file they already touch. Rerun phase 5, then
 `full-review` again — the re-review reports blocking findings only. Two rounds, then stop.
-A finding no unit owns — it needs a new file or one outside the plan — stops the run.
+A finding no unit owns — it needs a new file or one outside the plan: § When the run stops.
 
 A finding that the change disagrees with the ticket or spec never goes to a developer: it
 is a question for the user, listed at the next stop. Under `--decide`, each is decided;
@@ -207,17 +193,13 @@ one whose decision needs a code change goes to the owning developer like a findi
 Run only if the diff touches an app with a UI in the catalogue at `docs.qa` § Apps and
 ports. No `docs.qa`: skip, and say why in the report.
 
-1. **Find a running app.** Run the health check `docs.qa` § Starting the app gives on each
-   port it lists; the first that answers as described is ours. A port held by anything
-   else is not.
-2. **Otherwise start one.** Run the catalogue's launch command in the background, read the
-   port the way the catalogue says, then wait for the health check to answer. If it exits
-   instead, or the catalogue has no launch command, stop and show why, whatever the flags.
-3. **Run QA.** Spawn the QA role with the ticket's acceptance criteria as the charter and
-   the app's URL. Functional defects go to the owning developer, then phase 5, then one QA
-   re-check of those defects. UX-floor findings are reported, not fixed here.
-4. **Stop what you started.** After the last QA pass, stop the server step 2 started.
-   Never stop one step 1 found.
+1. **You own the server**, because it must outlive the first QA pass for the re-check:
+   reuse or start the app per `docs.qa` § Starting the app, and stop only one you started,
+   after the last QA pass. A launch that fails: § When the run stops.
+2. **Run QA.** Spawn the QA role with the ticket's acceptance criteria as the charter and
+   the app's URL — it then uses that app rather than starting its own. Functional defects
+   go to the owning developer, then phase 5, then one QA re-check of those defects.
+   UX-floor findings are reported, not fixed here.
 
 ## 9 — Stop, then ship
 
@@ -251,8 +233,8 @@ failures and review comments, squash-merges, deletes the branch, returns to
 `forge.baseBranch` and moves the ticket to `tracker.states.done` once the PR carrying
 `Fixes` merges.
 
-A babysitter that stops short of merging stops the run: show its report and leave the
-remaining PRs open. Otherwise append each merge to `$RUN/report.md` and show the final
+A babysitter that stops short of merging stops the run (§ When the run stops): show its
+report and leave the remaining PRs open. Otherwise append each merge to `$RUN/report.md` and show the final
 lines: the merge commits and the ticket's state. Under `--decide`, add the babysitter's
 decisions to `$RUN/decisions.md`, and end your final message with the whole of it — every
 decision of the run, with the PR it is in and any provisional log entry it wrote.
