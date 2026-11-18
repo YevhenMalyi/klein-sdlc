@@ -9,6 +9,9 @@ description: >-
   functionality vaguely enough that building from it directly would be guessing. Covers
   the reverse case too — backfilling an as-built spec for what already ships ("document
   what we've built", "backfill specs"), read out of the code rather than interviewed.
+  `--decide` (or "don't stop for answers") takes its own recommendation wherever it can,
+  asks only what only the user can answer, and ends with a review listing every question
+  and answer.
 ---
 
 # Writing a spec
@@ -28,6 +31,42 @@ you publish. Everything else here still holds.
 tracking conventions say a spec is reference material with no "done" state, so it lives
 as a document on the build's project. Read them if you have not:
 [`TRACKING.md`](${CLAUDE_PLUGIN_ROOT}/TRACKING.md).
+
+## Decide mode
+
+Invoked with `--decide`, or when the user says not to wait on them — "don't stop for
+answers", "just recommend and go", "decide what you can yourself". The interview still
+happens; the user just answers less of it.
+
+- **Every question is still written down** — the same rounds, the same design tree, the
+  same recommendation per question. Nothing is skipped because nobody will read it.
+- **Take your recommendation wherever you can stand behind it**: the code, an existing
+  spec, the house rules, the permissions doc, or established practice settles it. Log it
+  and move on to the questions it unlocks.
+- **Ask the user only what nothing but the user can answer** — who the thing is for, the
+  problem it solves, a goal or non-goal no source states, a business rule with no evidence
+  either way. Put those in one round, the same format as always, and wait. A spec built on
+  an invented purpose is fiction, so these never get decided for them.
+- **Log every question as it closes**, in order: `Q<n>`, the question, the answer, who gave
+  it (`user` / `decided`), and for a decided one the reason in a line — the evidence it
+  rests on.
+- **Decided answers are provisional in the document too.** They are written into the
+  section they belong to, like any answer, and each is also listed under **Open
+  questions** as `Decided provisionally: <question> → <answer>, because <reason>. Confirm
+  or change.` — so whoever reads the spec later can tell your calls from the user's, and
+  `refine-spec` sees them.
+
+The status line still reads `Draft`; decide mode never skips refinement.
+
+**End with the review.** After publishing, your final message is a review of the whole
+run, nothing left only in the conversation above it:
+
+1. **What was done** — the document URL, the template used, the build project, and each
+   section written, in a line each.
+2. **Every question and its answer**, in the order asked: a table of `Q<n>`, the
+   question, the answer, `user` or `decided`, and the reason for each decided one.
+3. **What to look at first** — the decided answers that most change what gets built, so the
+   user can overturn them before `refine-spec` runs.
 
 ## Before the interview
 
