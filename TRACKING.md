@@ -1,7 +1,7 @@
 # TRACKING.md
 
-How work is tracked here. Read by `write-spec`, `spec-to-stories`, `report-bug` and
-`whats-next`, and by anyone filing something by hand.
+How work is tracked here. Read by `write-spec`, `spec-to-stories`, `story-to-tasks`,
+`report-bug` and `whats-next`, and by anyone filing something by hand.
 
 It carries no project names of its own — the team, the build project, the states and the
 labels are the host's, in `.claude/sdlc.json`, and this file names them by their path
@@ -52,7 +52,7 @@ content, visible in a document listing without opening the document.
 | Value                                                      | Means                                                                  |
 | :--------------------------------------------------------- | :--------------------------------------------------------------------- |
 | `Draft — not yet refined.`                                 | Written, not yet reviewed for UX. Not plannable                        |
-| `Refined <date>`                                           | Reviewed and corrected. The only status `spec-to-stories` plans from   |
+| `Refined <date>`                                           | Reviewed and corrected. The only status `spec-to-stories` plans from. Under `refine-spec --decide` it adds `<n> findings decided without the owner; see Open questions.` |
 | `As-built — describes shipped functionality as of <date>.` | Written after the fact. Never becomes `Refined`, never becomes stories |
 
 A spec is born `Draft` and stays there until it has been through `refine-spec` — the point
@@ -143,8 +143,8 @@ Bugs use the same four levels by severity; the table is `report-bug`'s.
 - **Priority orders only what the relations leave free.** A hard dependency is a blocked-by
   relation, not a priority. Priority says which of the things that _could_ start should.
 
-`spec-to-stories` proposes a priority for every issue it drafts, with its reason, and the
-user corrects it before anything is published.
+`spec-to-stories` and `story-to-tasks` propose a priority for every issue they draft, with
+its reason, and the user corrects it before anything is published.
 
 ## Areas
 

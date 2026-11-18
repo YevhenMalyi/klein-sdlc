@@ -135,7 +135,7 @@ Four states, and they lead to different recommendations:
 | :-- | :-- | :-- |
 | **Started** | `statusType: started`, has open children | Half-done. Finish it. |
 | **Ready** | `unstarted`/`backlog`, has open children, no open blocker | Implementable now |
-| **Unsliced** | `unstarted`/`backlog`, **`children=0`** | Needs `spec-to-stories` pass 2 before anyone can implement it |
+| **Unsliced** | `unstarted`/`backlog`, **`children=0`** | Needs `story-to-tasks` before anyone can implement it |
 | **Blocked** | any `blockedBy` marked `(OPEN)` | Excluded from batches; listed with its blocker |
 
 **Unsliced is the one that's easy to miss.** A story with acceptance criteria
@@ -176,7 +176,7 @@ have already excluded.
 candidate changes the ranking, so finding one afterwards means the ranking was
 wrong.
 
-- **Unsliced stories** — needs `spec-to-stories` pass 2. Name them.
+- **Unsliced stories** — needs `story-to-tasks`. Name them.
 - **Deferred items** — anything labelled `tracker.deferLabel`, or sitting in `tracker.states.backlog`
   well below the rest. Mention it only if it has started gating something;
   otherwise it's noise.
@@ -217,7 +217,7 @@ In this order. Each rule beats every rule below it:
    `blocks` lists. Where they are the same length, the tiebreak is what the
    unblocked work costs to start: releasing a story that is already sliced
    into ready tasks is worth more than releasing one that still needs a
-   `spec-to-stories` pass before anyone can touch it. Applies to *Started*
+   `story-to-tasks` pass before anyone can touch it. Applies to *Started*
    and *Ready* candidates alike.
 5. **Priority is a tiebreaker, not the sort key — and only `P:` is compared.**
    Urgent/High/Medium/Low separates otherwise-equal candidates. Sorting by
@@ -332,10 +332,11 @@ Whatever the recommendation, this skill ends at the proposal:
   Linear, which this skill does not make either. Name the ticket and say what
   its status should be.
 - **Tasks to implement** → [`implement-ticket`](../implement-ticket/SKILL.md),
-  one at a time. It handles the status moves, including rolling the parent
+  one at a time, or [`deliver-ticket`](../deliver-ticket/SKILL.md) to take one
+  from plan to merged PR through the agent team. It handles the status moves, including rolling the parent
   story to `tracker.states.inProgress` when the first task starts.
-- **Unsliced stories** → [`spec-to-stories`](../spec-to-stories/SKILL.md),
-  pass 2, which breaks one named story into task sub-issues.
+- **Unsliced stories** → [`story-to-tasks`](../story-to-tasks/SKILL.md),
+  which breaks one named story into task sub-issues.
 - **Open spikes** → a conversation, not a skill. A spike closes when the user
   decides, and the decision belongs in the spec or in the host repo's decision log.
 

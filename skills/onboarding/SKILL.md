@@ -112,14 +112,14 @@ Describe this; don't run it. Two or three minutes, and the point is that the
 newcomer knows where a ticket came from before they pick one up. The contract
 for all of it is [`TRACKING.md`](${CLAUDE_PLUGIN_ROOT}/TRACKING.md).
 
-> `/klein-sdlc:write-spec` → `/klein-sdlc:refine-spec` → `/klein-sdlc:spec-to-stories` (stories) → `/klein-sdlc:spec-to-stories` (tasks, one story at a time)
+> `/klein-sdlc:write-spec` → `/klein-sdlc:refine-spec` → `/klein-sdlc:spec-to-stories` → `/klein-sdlc:story-to-tasks` (one story at a time)
 
 | Step | Skill | Produces | Where it lives |
 | :-- | :-- | :-- | :-- |
 | 1 | `write-spec` | A `Spec: <thing>` document, status `Draft` | A document on the build's project — never an issue, never a file in the repo |
 | 2 | `refine-spec` | The same spec, corrected against UX practice, status `Refined <date>` | The same document |
-| 3 | `spec-to-stories`, pass 1 | Stories: acceptance criteria, a priority, area labels, blocked-by relations | Parent issues, linked from the spec's **Stories** section |
-| 4 | `spec-to-stories`, pass 2 | Tasks for **one** story, each roughly one PR, each with a priority | Sub-issues of that story |
+| 3 | `spec-to-stories` | Stories: acceptance criteria, a priority, area labels, blocked-by relations | Parent issues, linked from the spec's **Stories** section |
+| 4 | `story-to-tasks` | Tasks for **one** story, each roughly one PR, each with a priority | Sub-issues of that story |
 
 `report-bug` is the other way onto the board: a bug comes from the running
 product, so nothing upstream of it exists to plan from. It is a top-level
@@ -134,15 +134,15 @@ guesses wrong:
 - **The order carries weight.** Refinement changes behaviour, and behaviour
   changed after planning invalidates the plan — so `refine-spec` runs before
   anything is sliced.
-- **Stories and tasks are made far apart in time.** Pass 1 runs once per spec.
-  Pass 2 runs when someone is about to start that story, never for the whole
+- **Stories and tasks are made far apart in time.** `spec-to-stories` runs once
+  per spec. `story-to-tasks` runs when someone is about to start that story, never for the whole
   backlog up front. A story with acceptance criteria and no tasks is a
   complete backlog item — and it is not implementable yet, which is why
   `whats-next` reports it as unsliced rather than ready.
 - **A priority means two different things.** A story's priority ranks it
   against the whole board. A task's ranks it against the other tasks of its
   own story, and nothing else: it says which slice to pick up first. Both are
-  proposed by `spec-to-stories` and corrected by the user before anything is
+  proposed by `spec-to-stories` or `story-to-tasks` and corrected by the user before anything is
   published.
 
 Nothing reaches the tracker from any of these skills without an approval: each
