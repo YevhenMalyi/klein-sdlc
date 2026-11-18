@@ -1,6 +1,6 @@
 ---
 name: commit-and-pr
-description: End-to-end workflow for committing branch changes and opening PRs. Encapsulates branch separation by concern, conventional commits via the craft-commits skill, Linear issue wiring, an embedded PR body template, a local git push, GitHub MCP PR creation, and the standard assignee+label workflow. Use when the user says "commit and create PR", "ship this branch", "push and open PR", "commit these changes and create PRs", or after completing implementation work that needs to land on GitHub.
+description: End-to-end workflow for committing branch changes and opening PRs. Encapsulates splitting the work into review-sized PRs (Claude docs always apart from code), branch separation by concern, conventional commits via the craft-commits skill, Linear issue wiring, an embedded PR body template, a local git push, GitHub MCP PR creation, and the standard assignee+label workflow. Use when the user says "commit and create PR", "ship this branch", "push and open PR", "commit these changes and create PRs", or after completing implementation work that needs to land on GitHub.
 ---
 
 # Commit and Create PRs
@@ -55,16 +55,51 @@ in it:
 1. `git status` and `git diff --stat` (parallel).
 2. Base branch is `forge.baseBranch`.
 3. Read each changed file briefly and bucket it:
-   - **Feature / fix** — the named work, normally one Linear issue per branch
+   - **Claude docs** — everything under `.claude/**`: rules, practices, review
+     catalogues, the QA catalogue, house rules, skills, agents, the manifest
+   - **Feature / fix** — the named work, normally one tracker issue
    - **Refactor** — cleanup not tied to an issue, often a follow-up to recent work
-   - **Tooling / chore** — `.claude/**`, `.github/**`, root config, `tooling/*`
-4. Print the inventory before proposing branches. Call out any file that doesn't
-   obviously belong to what the user described — it may be a leftover.
+   - **Tooling / chore** — `.github/**`, root config, `tooling/*`
+4. Measure each bucket: `git diff --numstat` for tracked files, `wc -l` for untracked ones.
+   Lockfiles, generated code, snapshots and generated migrations are listed but do not
+   count toward the budget below.
+5. Print the inventory, with the counts, before proposing branches. Call out any file that
+   doesn't obviously belong to what the user described — it may be a leftover.
 
 ### Phase 1 — Branch strategy
 
-Default: **one concern per branch, one PR per branch.** Three mixed concerns in the
-working tree means three branches and three PRs.
+Default: **one concern per branch, one PR per branch, and every PR within the review
+budget.** Three mixed concerns in the working tree means at least three branches and
+three PRs.
+
+**The review budget: about 400 changed lines and about 15 files per PR**, not counting
+the exempt files above. Past that, review quality drops sharply — reviewers skim rather
+than read. The budget is a target, not a gate: a PR slightly over it that cannot be cut
+cleanly is better than two PRs that don't each make sense.
+
+**Split in this order, and stop as soon as every piece fits:**
+
+1. **Claude docs apart from code — always**, even when both are small. `.claude/**`
+   changes are a different review (is the rule right?) from the code (does it follow the
+   rule?), and they are read by different people.
+2. **Prefactor / refactor** the feature builds on, ahead of the feature.
+3. **Contract / schema** — shared types, the API contract, migrations.
+4. **The feature by layer** — backend, then each app — when it is still over budget.
+
+Tests travel with the code they cover, never in a PR of their own.
+
+**Every PR must pass `gates` on its own and merge into `forge.baseBranch` by itself**, in
+the order proposed. Split only at seams where that holds: the prefactor builds without
+the feature, the contract builds without its consumers. A piece still over budget that
+won't split along such a seam stays one PR, and its body says it is oversized and why. **No
+stacked PRs** — each branch is cut from `forge.baseBranch`, never from another feature
+branch, so nothing needs retargeting after a merge.
+
+**Several PRs for one tracker issue share it.** Each is titled with the issue, in merge
+order; every PR but the last carries `Refs <tracker.issuePrefix>-XX`, and only the last
+carries `Fixes`, so the issue closes when the work is whole. Branch names stay distinct by
+their description (`forge.issueBranch` with a suffix per piece). A Claude-docs PR with no
+issue of its own is `forge.noIssueTag` unless the docs change is part of the issue's work.
 
 **Branch naming — include the tracker issue ID** so the GitHub integration links the
 branch to the issue and moves it to `tracker.states.inProgress`:
@@ -89,7 +124,7 @@ files per branch, expected commit count, and the tracker issue each maps to.
 
 ### Phase 2 — Per-branch commit work
 
-For each branch, smallest and safest first:
+For each branch, in the merge order Phase 1 proposed:
 
 1. **Switch to base.** `git checkout <forge.baseBranch>`.
 2. **Create the branch.** `git checkout -b <branch-name> <forge.baseBranch>`. Unstaged work belonging
@@ -101,6 +136,11 @@ For each branch, smallest and safest first:
    repo-wide and fast; run them all rather than guessing at scope. `gatesNote` says what
    each one carries. **Abort on any failure** — do not commit broken code, and do not
    "fix" it by relaxing a rule.
+   **When other branches' work is still in the tree, verify this branch alone.** Their
+   unstaged files would otherwise make the gates test a tree this PR never merges into:
+   `git stash push --keep-index --include-untracked -m "commit-and-pr: later branches"`,
+   run the gates, then `git stash pop` — always, pass or fail, before anything else. A pop
+   that conflicts: stop and show `git stash list`; never drop the stash.
 5. **Invoke the `klein-sdlc:craft-commits` skill** via the Skill tool. It sees the whole working
    tree, so scope it explicitly: _"Only the staged files belong to this branch; leave
    unstaged work alone for subsequent branches."_ It produces the grouped conventional
@@ -191,6 +231,10 @@ Notes on the template:
 - **AC reference style: `AC1`, `AC2`, … no hash, no spaces.** Write "AC3 marks all three
   fields required" — not `AC #3`, `AC-3`, or `Acceptance Criterion 3`. Ranges use an
   en-dash: `AC1–AC6`. Applies to PR titles, PR bodies, commit bodies, and code comments.
+- **A PR in a split set says so** as the first line of its Technical Summary: `Part 2 of 3
+  for <tracker.issuePrefix>-XX`, with the other PRs of the set by branch or number and
+  the order they merge in. An oversized PR (Phase 1) says so in the same place, with its
+  size and why it would not split.
 - A change spanning the stack may add sub-headings inside the Technical Summary — one per
   layer (contract, backend, frontend) reads better than one long list. They go **inside**
   that section, never in place of it.
