@@ -106,6 +106,9 @@ git diff <forge.baseBranch>...HEAD    # or: git diff HEAD  for uncommitted work
 git status --short
 ```
 
+`git diff` never shows untracked files: every `??` line in `git status` is a new file in the
+change, and you read it whole.
+
 `forge.baseBranch` is in `.claude/sdlc.json`.
 
 If both are empty, say so and stop. Never invent a diff. Then narrow to your lane's paths —
