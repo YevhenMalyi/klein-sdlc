@@ -14,8 +14,9 @@ the agent stops if it cannot find it.
 
 ## Starting the app
 
-What the skills that drive the app — `deliver-ticket`, `implement-ticket` — need to reuse a
-running instance or start one. `manual-qa-engineer` itself never starts anything.
+What everything that drives the app — `manual-qa-engineer`, `deliver-ticket`,
+`implement-ticket`, `report-bug`, `onboarding` — needs to reuse a running instance or start
+one. Each stops only a server it started itself.
 
 - **Health check.** A request that tells *this* app apart from whatever else holds the port
   (`GET http://localhost:<port>/<path>` answering `<body>`). A port that answers anything
@@ -25,7 +26,7 @@ running instance or start one. `manual-qa-engineer` itself never starts anything
   one.
 - **Ready when.** How long it takes and what to wait for before driving it.
 
-Leave this section out and the skills will only drive an app that is already up.
+Leave this section out and they will only drive an app that is already up.
 
 ## Signing in
 

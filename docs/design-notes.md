@@ -372,6 +372,12 @@ QA is the one phase that starts the app, and it does so through the QA catalogue
 command and health check, so the plugin carries no idea of how any host runs. Developers
 and the babysitter never start servers.
 
+The plugin used to forbid starting a dev server anywhere, and every skill that needed the
+app asked the user to start it. That is lifted everywhere at once — `implement-ticket`,
+`report-bug`, `manual-qa-engineer`, `onboarding` — under one rule: reuse what the health
+check finds, otherwise start it with the catalogue's launch command, and stop only what
+you started. The user's own server is never killed.
+
 Rejected: a Workflow script (deterministic, but it runs in the background, which makes the
 approval stops awkward, and it costs more); developers in worktrees (isolation bought with
 a merge-back); fully autonomous by default (a plan or a commit the user has not seen).

@@ -39,8 +39,10 @@ The project manifest — `tracker.*` and `forge.*` below name values in it:
 - **This ships for real.** A real tracker ticket moves to `tracker.states.inProgress`
   and gets assigned; a real PR opens against `forge.baseBranch`. Say that plainly at the start and
   get a yes before touching the board.
-- **Never start the dev server.** Step 5 needs the apps running; ask the
-  person to start them and wait.
+- **The app is started the QA catalogue's way, or not at all.** Step 5 needs it
+  running: `manual-qa-engineer` reuses one that is up and otherwise starts it
+  with the catalogue's launch command, and stops only what it started. Don't
+  start it any other way.
 - **Run only the steps of Part 3.** Not an extra review lane, not a second QA
   sweep, not `/code-review` on top of `full-review`. The chain is the lesson;
   padding it teaches the wrong thing about what a normal change costs.
@@ -164,7 +166,9 @@ git status --short --branch
 ```
 
 A dirty tree or a branch other than `forge.baseBranch` is a stop-and-ask, not something to clean
-up. Also ask whether the dev server is running — step 5 needs it.
+up. Check that the QA catalogue has § Starting the app — step 5 starts the
+app from it when it is not already up. Without it, ask them to start the app
+before step 5.
 
 Two preconditions are the host's state rather than the person's, and both are
 worth knowing before step 1 rather than at the step they break:
@@ -263,8 +267,9 @@ substantive changed.
 
 ### 5 — Exercise it: `manual-qa-engineer`
 
-Needs the apps running. If the dev server is not up, **ask them to start it**
-and wait.
+Needs the app running. `manual-qa-engineer` reuses one that is up, otherwise
+starts it the way the QA catalogue says and stops it when done. If the catalogue
+has no launch command, **ask them to start it** and wait.
 
 Spawn the subagent against what the ticket changed. It signs itself in the way
 the host's QA catalogue says, so it can exercise every role rather than only
