@@ -18,12 +18,15 @@ reason the plugin can be reused.
 | :---------------------------------------- | :--------------------------------------------------------------------------------------------- |
 | `skills/write-spec`                       | Interview the user as a client, publish a `Spec:` document to the tracker                      |
 | `skills/refine-spec`                      | Review a spec against UX practice, patch the accepted findings back                            |
-| `skills/spec-to-stories`                  | Turn a spec into stories, and one story into tasks, as tracker issues                          |
+| `skills/spec-to-stories`                  | Turn a refined spec into stories, as tracker issues                                            |
+| `skills/story-to-tasks`                   | Break one story into tasks, as sub-issues, when it is about to start                           |
 | `skills/report-bug`                       | File a bug as a top-level issue, then optionally diagnose it                                   |
 | `skills/whats-next`                       | Read the board and the open PRs, propose the next coherent batch of work                       |
 | `skills/implement-ticket`                 | Pick up a ticket by number and implement it on the base branch, without branching             |
+| `skills/deliver-ticket`                   | Take a ticket from its number to merged PRs through an agent team: plan, plan review, parallel build, full review, QA, commit, babysit |
+| `skills/babysit`                          | Look after one open PR until it is merged: up to date, green, review comments worked, squash-merged |
 | `skills/craft-commits`                    | Regroup branch changes into conventional commits, one concern per commit                       |
-| `skills/commit-and-pr`                    | Branch, verify, commit, push, open a PR with tracker wiring and labels                         |
+| `skills/commit-and-pr`                    | Split the work into review-sized PRs, Claude docs apart from code; branch, verify, commit, push, open each with tracker wiring and labels |
 | `skills/full-review`                      | Run the host's review lanes in parallel, verify every finding, merge one report, log the gaps  |
 | `skills/implement-reviewer`               | Add a review lane to the host: agent, catalogue and manifest entry, cut from `basic-reviewer` |
 | `skills/review-contract`                  | `REVIEW.md` as a skill, so a host's lane preloads the contract from the plugin                 |
@@ -31,7 +34,11 @@ reason the plugin can be reused.
 | `skills/onboarding`                       | Tour the setup and the planning workflow, then walk a newcomer through a first ticket for real |
 | `agents/basic-reviewer`                   | The one lane the plugin ships: rules conformance plus ordinary bugs, and the boilerplate every host lane is cut from |
 | `agents/finding-verifier`                 | One finding in, one verdict out, in fresh context                                              |
-| `agents/manual-qa-engineer`               | Drives the running app in a browser and reports what is broken                                 |
+| `agents/manual-qa-engineer`               | Drives the running app in a browser and reports what is broken; `deliver-ticket`'s default QA role |
+| `agents/architect`                        | Plans one ticket: criteria mapped to code and tests, work cut into units owning disjoint files |
+| `agents/plan-reviewer`                    | Reviews the architect's plan in fresh context, before any code exists                          |
+| `agents/developer`                        | Builds one unit of an approved plan, or fixes findings, in the files it owns                   |
+| `agents/babysitter`                       | Runs `babysit` on one PR in its own context                                                    |
 | `REVIEW.md`                               | The review contract: the blocking bit, the evidence bar, the lane procedure, verification      |
 | `TRACKING.md`                             | The tracking contract: specs, stories, tasks and bugs, and what a priority ranks               |
 | `schema/sdlc.schema.json`                 | The shape of the host's `.claude/sdlc.json`                                                    |
@@ -39,8 +46,16 @@ reason the plugin can be reused.
 | `docs/design-notes.md`                    | Why it is shaped this way, and what was rejected                                               |
 
 The intended path from idea to merged PR: `write-spec` → `refine-spec` → `spec-to-stories`
-→ `whats-next` → `implement-ticket` → `full-review` → `commit-and-pr`, with `report-bug`
-as the other way onto the board and `implement-reviewer` for growing the review itself.
+→ `story-to-tasks` → `whats-next` → `implement-ticket` → `full-review` → `commit-and-pr`,
+with `report-bug` as the other way onto the board and `implement-reviewer` for growing the
+review itself. `deliver-ticket` runs the second half — implement, review, QA, commit and
+merge — as one orchestrated run through the agent team, for a ticket big enough to be
+worth nine or more agents.
+
+`write-spec`, `refine-spec`, `deliver-ticket` and `babysit` take `--decide`, or plain words
+to the same effect ("don't stop for answers"): they take their own recommendation wherever
+they can stand behind it, stop only for what needs the user, and report every decision —
+each question with the answer taken and why — at the end of the run.
 
 ## What the host provides
 
@@ -71,9 +86,9 @@ Read relative to the working directory, so they live in the host repo:
   must not.
 - **`.claude/docs/rule-gaps.md`** — the ledger `full-review` appends gap findings to.
   `templates/rule-gaps.md` is its header.
-- **The QA catalogue** at `docs.qa` — which apps run where, how to sign in as each role
-  locally, which failures are blocked rather than defects. `manual-qa-engineer` stops
-  without it. `templates/qa-catalogue.md` is the shape.
+- **The QA catalogue** at `docs.qa` — which apps run where, how to start them and tell
+  they are up, how to sign in as each role locally, which failures are blocked rather
+  than defects. `manual-qa-engineer` stops without it. `templates/qa-catalogue.md` is the shape.
 - **The UX house rules** at `docs.uxHouseRules` — the product's audiences and the rules
   that take sides for each. `refine-spec` and `manual-qa-engineer` read them after the
   plugin's product-agnostic floor. `templates/ux-house-rules.md` is the shape.
@@ -85,6 +100,10 @@ Optional, because the plugin carries a working default:
 
 - **A spec template** at `docs.specTemplate` — for a host whose specs need different
   sections. Without the key, `write-spec` uses `templates/spec-template.md`.
+- **Its own agents for `deliver-ticket`'s roles**, named under `roles` in the manifest —
+  `architect`, `planReviewer`, `developer`, `qa`, `babysitter`. Each role left out runs the
+  plugin's generic agent; copy that agent into `.claude/agents/` and name it here to
+  narrow it to the host.
 
 **Nothing the plugin needs lives in the host's tracker.** The tracker holds specs, stories,
 tasks and bugs — the work. How that work is tracked is `TRACKING.md`, and why the plugin is
@@ -103,7 +122,8 @@ installed it can read them.
   are where a second adapter would attach.
 - `LINEAR_API_KEY` in the environment for the two board scripts, which go through Linear's
   GraphQL API because the MCP cannot express their filters in one call.
-- `gh` authenticated, for the PR half of `whats-next`.
+- `gh` authenticated, for the PR half of `whats-next` and for `babysit`, which reads checks,
+  review threads and merges through it.
 
 ## Running it
 
@@ -176,7 +196,9 @@ Not automated yet. By hand, from `templates/`:
 5. `rule-gaps.md`, `qa-catalogue.md` and `ux-house-rules.md` → the paths the manifest names.
 6. `mcp.json` → `.mcp.json`, unless the host already runs `linear`, `github` and
    `playwright` under those names.
-7. Only if the plugin's spec template does not fit: `spec-template.md` → a path in the host
+7. Only if a generic `deliver-ticket` role does not fit: copy `agents/<role>.md` into
+   `.claude/agents/`, narrow it, and name it under `roles` in the manifest.
+8. Only if the plugin's spec template does not fit: `spec-template.md` → a path in the host
    repo, edited, and named at `docs.specTemplate`.
 
 In the tracker: the team, the build project, the five states and the five type labels the

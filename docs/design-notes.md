@@ -225,8 +225,8 @@ this and said no" is the only thing that stops a gap being re-raised forever.
 
 ## The skill chain
 
-`write-spec` → `refine-spec` → `spec-to-stories` → `whats-next` → `implement-ticket` →
-`full-review` → `commit-and-pr`, and the order carries weight: refinement changes
+`write-spec` → `refine-spec` → `spec-to-stories` → `story-to-tasks` → `whats-next` →
+`implement-ticket` → `full-review` → `commit-and-pr`, and the order carries weight: refinement changes
 behaviour, and behaviour changed after planning invalidates the plan. `report-bug` is the
 other way onto the board, filing first and diagnosing second on request, so a bug found
 mid-task costs a minute to record rather than ten.
@@ -268,7 +268,7 @@ plugin.** A host's tracker holds the host's work, never the method.
 that priority was how work gets ranked, and `whats-next` then broke ties on a field that
 was empty across the board.
 
-Both passes now propose one, and the user corrects it before anything is published. It is
+`spec-to-stories` and `story-to-tasks` now propose one each, and the user corrects it before anything is published. It is
 proposed rather than asked for because a recommendation lets the user accept a whole
 breakdown in a word, the same reasoning as the interview loop.
 
@@ -340,3 +340,64 @@ shipped ticket when the file's contents end up in a PR description.
 The interview loop in the spec skills, a design tree worked in rounds with a
 recommendation attached to each question, and the vertical-slicing and quiz-before-publish
 steps, are adapted from MIT-licensed work credited in `NOTICE.md`.
+
+## Stories and tasks are two skills
+
+`spec-to-stories` used to carry both passes, stories from a spec and tasks from one story,
+and said they were "deliberately far apart in time". One skill for two moments meant every
+run had to work out which pass it was in, and finishing pass 1 sat one sentence away from
+starting pass 2 on the whole backlog, which is the thing the tracking contract forbids. Two
+skills make the gap structural: `spec-to-stories` never offers to continue into tasks, and
+`story-to-tasks` takes exactly one named story.
+
+## `deliver-ticket`: an agent team, with roles the host can replace
+
+`implement-ticket` builds in one context, because the driver needs the whole picture to
+keep the layers consistent. `deliver-ticket` moves that picture into a written plan
+instead: the architect cuts the work into units that own disjoint files and declare the
+exact signatures they provide, a fresh plan reviewer checks the cut before anything is
+built, and developers then build the units in parallel in the one checkout. Ownership is
+enforced by checking `git status` against the plan after each wave; the repo-wide gates
+run only in the orchestrator, because a developer running them would race the others. It
+was proven in a host repository before it moved here.
+
+Each role is resolved through the manifest's optional `roles` block, falling back to the
+plugin's generic agent. The alternative, using a host agent whenever a file with the
+role's name exists in `.claude/agents/`, was rejected: it is implicit, and a host would
+get an override it never chose just by owning a file called `developer.md`. A role the
+manifest names but which does not exist stops the run rather than falling back, for the
+same reason.
+
+QA is the one phase that starts the app, and it does so through the QA catalogue's launch
+command and health check, so the plugin carries no idea of how any host runs. Developers
+and the babysitter never start servers.
+
+Rejected: a Workflow script (deterministic, but it runs in the background, which makes the
+approval stops awkward, and it costs more); developers in worktrees (isolation bought with
+a merge-back); fully autonomous by default (a plan or a commit the user has not seen).
+
+## Decide mode, and what it must leave behind
+
+`--decide` lets a run take its own recommendations instead of waiting, in `write-spec`,
+`refine-spec`, `deliver-ticket` and `babysit`. It never removes a stop that needs
+something only the user has: the purpose of a feature, a login, a dirty tree, a failure
+left after its cap. And it never decides silently: every question is still written down,
+and the run ends with a review listing each one with the answer taken, who took it and
+why. The spec skills also leave each decided answer under **Open questions** as
+`Decided provisionally`, because the chat is gone after the session and the spec is what
+gets read later. `spec-to-stories` raises those again before planning on them.
+
+## Review-sized PRs
+
+`commit-and-pr` splits by concern, and now by size: about 400 changed lines and about 15
+files per PR, generated files excluded. Review quality drops sharply past a few hundred
+lines; reviewers start skimming. Claude docs are always apart from code, because "is the
+rule right?" and "does the code follow it?" are different reviews.
+
+Every piece must pass the gates and merge on its own, so pieces are cut only at seams where
+that holds, and each is verified with the other pieces stashed out of the tree. Stacked PRs
+were rejected: each needs retargeting after the one below it merges, and a babysitter
+merging in order would have to manage that. A piece that won't split along a clean seam
+stays whole and says it is oversized. Only the last PR of a ticket's set says `Fixes`; the
+rest say `Refs`, so the ticket closes when the work is whole.
+
