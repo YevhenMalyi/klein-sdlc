@@ -203,10 +203,12 @@
           "type": "string"
         },
         "rules": {
-          "type": "string"
+          "const": ".claude/docs/rules/README.md",
+          "description": "Fixed: the skills and lanes read the rules corpus at .claude/docs/rules/. The key names its index so the manifest lists every doc in one place."
         },
         "practices": {
-          "type": "string"
+          "const": ".claude/docs/practices/README.md",
+          "description": "Fixed: the skills and lanes read the practices corpus at .claude/docs/practices/."
         },
         "reviewCatalogues": {
           "type": "string",

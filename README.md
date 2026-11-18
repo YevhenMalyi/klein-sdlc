@@ -96,6 +96,12 @@ Read relative to the working directory, so they live in the host repo:
   lanes and `implement-ticket` read, the manifest paragraph, and the invariants that fail
   silently. A plugin cannot ship always-loaded rules; `templates/core.md` is the skeleton.
 
+**Fixed paths.** These are read where they are, not through the manifest: `.claude/rules/core.md`
+(Claude Code loads `.claude/rules/` into every session, which is the point of it),
+`.claude/docs/rules/`, `.claude/docs/practices/` (the schema pins `docs.rules` and
+`docs.practices` to their indexes), and `.claude/docs/rule-gaps.md`. Every other host path
+is a manifest key.
+
 Optional, because the plugin carries a working default:
 
 - **A spec template** at `docs.specTemplate` — for a host whose specs need different

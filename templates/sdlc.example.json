@@ -63,9 +63,7 @@
     "uxHouseRules": ".claude/docs/ux-house-rules.md"
   },
   "roles": {
-    "$comment": "Optional. The agents deliver-ticket spawns per role. Leave a role out to use the plugin's generic agent; name one in .claude/agents/ to use the host's own.",
-    "architect": "architect",
-    "developer": "developer"
+    "$comment": "Optional. The agents deliver-ticket spawns per role: architect, planReviewer, developer, qa, babysitter. A role left out runs the plugin's generic agent. Add one only once its agent exists in .claude/agents/ — a named role whose agent is missing stops the run."
   },
   "review": {
     "$comment": "One entry per lane, in spawn and report order. `agent` is a subagent in .claude/agents/ cut from the plugin's basic-reviewer by implement-reviewer, or the plugin's own klein-sdlc:basic-reviewer before any exists. `catalogue` is a file under docs.reviewCatalogues. `trigger` is \"always\", a list of path prefixes, or \"catalogue\" for the trigger list the catalogue carries.",
