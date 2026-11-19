@@ -15,4 +15,18 @@ sed -i.bak 's/category.publishedPostCount > 0/category.publishedPostCount >= 0/'
 sed -i.bak 's|export const HomePage = ({ data }: HomePageProps) => {|export const HomePage = ({ data }: HomePageProps) => {\n  const renderedAt = new Date().toLocaleTimeString();|' src/pages/home/HomePage.tsx
 sed -i.bak 's|<h1>Front page</h1>|<h1>Front page</h1>\n      <small>Rendered at {renderedAt}</small>|' src/pages/home/HomePage.tsx
 rm -f src/pages/home/*.bak
+# Planted defect 3, in a new file left untracked: `git diff` never shows it, so only a review
+# that picks up untracked files finds it. Two independent fetches awaited one after the other.
+mkdir -p src/pages/about
+cat > src/pages/about/load-about.server.ts <<'TS'
+declare function getAboutCopy(): Promise<{ body: string }>;
+declare function listTeamMembers(): Promise<{ name: string }[]>;
+
+export async function loadAbout() {
+  const copy = await getAboutCopy();
+  const team = await listTeamMembers();
+
+  return { copy, team };
+}
+TS
 git status --short

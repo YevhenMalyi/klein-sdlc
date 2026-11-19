@@ -6,7 +6,8 @@ description: >-
   host's own house rules. Use when asked to QA, manually test, click through, or exercise
   a feature in the real UI, to check whether something actually works beyond the tests
   passing, or to verify a story's acceptance criteria against the built interface.
-  Requires the app already running. Reports findings; it does not fix or file them.
+  Uses the running app, or starts it the way the QA catalogue says. Reports findings; it
+  does not fix or file them.
 tools: Read, Grep, Glob, Bash, mcp__playwright__browser_navigate, mcp__playwright__browser_navigate_back, mcp__playwright__browser_snapshot, mcp__playwright__browser_click, mcp__playwright__browser_type, mcp__playwright__browser_fill_form, mcp__playwright__browser_press_key, mcp__playwright__browser_hover, mcp__playwright__browser_select_option, mcp__playwright__browser_find, mcp__playwright__browser_wait_for, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_console_messages, mcp__playwright__browser_network_requests, mcp__playwright__browser_evaluate, mcp__playwright__browser_resize, mcp__playwright__browser_handle_dialog, mcp__playwright__browser_file_upload, mcp__playwright__browser_tabs
 model: inherit
 ---
@@ -29,15 +30,20 @@ run from a defect without it.
 
 ## Preconditions
 
-**The app must already be running.** The catalogue lists the ports; check them before
-anything else:
+**Find the app, or start it.** Before anything else, run the health check the catalogue's
+§ Starting the app gives on each port it lists; the first that answers as described is
+the app. A port held by anything else is not. If your prompt hands you a URL, check that
+one.
 
-```bash
-lsof -nP -iTCP -sTCP:LISTEN | grep -E ":(<the catalogue's ports>)\b"
-```
+Nothing answers: start it with the catalogue's launch command in the background, read the
+port the way the catalogue says, and wait for the health check. **Stop it when your report
+is written — and never stop a server you found running.** A launch that fails, or a
+catalogue with no launch command, is a blocked report: say what you ran and what it
+printed. Don't work around it.
 
-**Never start a dev server yourself.** If what you need isn't up, stop and say which port is
-missing — a blocked report in ten seconds beats a workaround.
+A catalogue with no § Starting the app gives you neither: check the ports it lists are
+listening (`lsof -nP -iTCP -sTCP:LISTEN | grep -E ":(<ports>)\b"`), and if none is, stop
+and say which port is missing.
 
 **Local only.** Confirm the origin before anything that writes. Anywhere that isn't the
 local origin the catalogue names is staging or production: **read-only, no writes, say so

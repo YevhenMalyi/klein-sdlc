@@ -191,8 +191,9 @@ Run every command in `gates`, in order, each to completion.
 
 Abort and fix on any failure — don't relax a rule to get green, and don't
 report a command as passing that wasn't run. For a frontend-visible change,
-check it in a running browser per the host's own verification rule — but
-don't start a dev server unasked; only drive it if the apps are already up.
+check it in a running browser per the host's own verification rule, reusing or
+starting the app per `docs.qa` § Starting the app. Stop only a server you
+started; a launch that fails is reported, not worked around.
 
 ### 8 — Stop and report
 

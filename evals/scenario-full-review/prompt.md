@@ -5,5 +5,4 @@ allowed_tools: [Read, Glob, Grep, Bash, Agent, Skill, Write, Edit]
 tags: [scenario]
 ---
 
-Run a full review of the uncommitted changes in this repository — `git diff HEAD` — against
-its written rules. This is the first review of these changes. Report the findings.
+Run a full review of the uncommitted changes in this repository against its written rules. This is the first review of these changes. Report the findings.

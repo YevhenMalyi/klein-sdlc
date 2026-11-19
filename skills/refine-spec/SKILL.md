@@ -9,6 +9,7 @@ description: >-
   actually work for the user", or before breaking a spec into stories. Against an
   as-built spec the same review runs, but the findings describe the shipped product, so
   they leave as bugs rather than as patches to the document.
+  Supports `--decide` ("don't stop for answers").
 ---
 
 # Refining a spec
@@ -22,6 +23,43 @@ often invisible in the document. Your job is to name the tension and hand it bac
 here's what you asked for, here's the friction it creates and for whom, here's the
 alternative and what it costs. Which one ships is the user's call, and it should stay
 traceable to a moment where they made it — never to a diff that quietly appeared.
+
+The one exception is decide mode, which the user turns on themselves — see below. Even
+there, every call you make is written down where they will read it.
+
+## Decide mode
+
+Invoked with `--decide`, or when the user says not to wait on them — "don't stop for
+answers", "just apply what you recommend", "decide what you can yourself".
+
+- **Steps 1–3 are unchanged**, and every finding is still written in the step 4 format,
+  with its recommendation.
+- **Take your recommendation** on each finding the heuristics, the house rules or the code
+  settle: accept, reject or rework, as you would have advised. Log it and go on.
+- **Ask the user only what changes what the client asked for** — a finding whose
+  resolution contradicts something the spec states as a goal, a non-goal or a business
+  rule. The spec says it for a reason you may not see; those go to the user in one round,
+  and you wait.
+- **Log every finding as it closes**: `F<n>`, the finding, the resolution, who took it
+  (`user` / `decided`), and for a decided one the reason in a line.
+- **Patch as step 5 says**, and also list each decided finding under **Open questions** as
+  `Decided provisionally: <finding> → <resolution>, because <reason>. Confirm or change.`
+  Rejections land in **Non-goals** as usual, marked `(decided provisionally)`.
+- **The status line** moves to `Refined <today's date>` — the user handed you the calls —
+  with a second sentence: `<n> findings decided without the owner; see Open questions.`
+  `spec-to-stories` reads Open questions before planning, so those reach the user again
+  before any story is cut from them.
+- Provisional decisions the `write-spec --decide` run left under Open questions are
+  findings too: confirm or overturn each on the same rules, and log it.
+
+**End with the review.** Your final message covers the whole run, nothing left only in
+the conversation above it:
+
+1. **What was done** — the document URL, the audiences judged, and each section patched,
+   in a line each. Against an as-built spec, the issues filed, by identifier.
+2. **Every finding and its resolution**, in order: a table of `F<n>`, the finding, the
+   resolution, `user` or `decided`, and the reason for each decided one.
+3. **What to look at first** — the decided resolutions that most change what gets built.
 
 ## 1. Load the material
 

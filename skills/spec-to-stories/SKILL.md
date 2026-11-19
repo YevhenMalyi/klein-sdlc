@@ -3,17 +3,14 @@ name: spec-to-stories
 description: >-
   Turns a `Spec:` document on a Linear project into stories — parent issues with
   acceptance criteria, a priority, area labels, and blocked-by relations — and links them
-  back to the spec. On explicit request for one named story, breaks that story into
-  prioritized tasks as sub-issues. Use when the user says "break this spec into stories", "create the issues
-  for this spec", "plan the work for Spec: X", "what stories does this need", or "make
-  the tasks for <prefix>-XX".
+  back to the spec. Use when the user says "break this spec into stories", "create the
+  issues for this spec", "plan the work for Spec: X", or "what stories does this need".
+  Breaking one story into tasks is story-to-tasks, not this.
 ---
 
 # Spec to stories
 
-Two passes, and they are deliberately far apart in time.
-
-**Pass 1 turns a spec into stories.** Run it once the spec has been through
+Turns a spec into stories. Run it once the spec has been through
 [`refine-spec`](../refine-spec/SKILL.md) — refinement changes behaviour, and behaviour
 changed after planning invalidates the plan.
 
@@ -27,38 +24,35 @@ ships, so there is no work in it to slice. Stop and say so. If the user wants is
 it, what they want is [`refine-spec`](../refine-spec/SKILL.md), which files the gaps it
 finds as bugs — not stories reconstructing work that is already done.
 
-**Pass 2 turns one story into tasks.** Run it when you are about to start that story —
-not before.
+**Stories only, never their tasks.** Tasks are [`story-to-tasks`](../story-to-tasks/SKILL.md),
+run only when someone is about to start that story (`TRACKING.md`) — so never offer to
+continue into them.
 
 The project manifest — `tracker.*` below names values in it:
 
 !`cat .claude/sdlc.json`
 
-That split is the tracking convention, not a preference:
-_"Don't create tasks for a story until you are about to start it. A story with acceptance
-criteria and no sub-issues is a complete backlog item."_ Creating the whole graph up front
-produces sub-issues that are stale by the time anyone opens them. Read the conventions in
-[`TRACKING.md`](${CLAUDE_PLUGIN_ROOT}/TRACKING.md) if you have not — § Priority in
-particular, because both passes set one.
+Read the conventions in [`TRACKING.md`](${CLAUDE_PLUGIN_ROOT}/TRACKING.md) if you have
+not — § Priority in particular, because every story gets one.
 
-## Pass 1 — stories
-
-### 1. Read the spec
+## 1. Read the spec
 
 If the user passed a document URL, title, or id, fetch it. Otherwise find it:
 `mcp__linear__list_documents` with `query: "Spec: "` — if exactly one recent spec sits on
 the open build, propose it and confirm; never guess between two.
 
 Read the **whole** document, including Open questions. An open question that gates a story
-is a blocker to raise now, not a surprise for the implementer.
+is a blocker to raise now, not a surprise for the implementer. So is a `Decided
+provisionally` entry there — left by `write-spec` or `refine-spec` in decide mode — when a
+story rests on it: name it in step 4's quiz so the user confirms it before it is planned on.
 
-### 2. Read the codebase
+## 2. Read the codebase
 
 Enough to name things the way the repo names them, and to spot prefactoring: _make the
 change easy, then make the easy change._ A prefactor is its own story, and it blocks the
 ones it unblocks.
 
-### 3. Draft the stories
+## 3. Draft the stories
 
 A **story is a user-visible outcome with acceptance criteria**. The test is whether you
 can write _"as a <role>, I can …"_. If you can't, it isn't a story — it's a
@@ -102,7 +96,7 @@ vertical slice. Sequence it expand–contract instead: add the new form beside t
 migrate call sites in batches sized by blast radius (per package, per area), each batch
 blocked by the expand, then delete the old form in a contract story blocked by every batch.
 
-### 4. Quiz the user before publishing anything
+## 4. Quiz the user before publishing anything
 
 Present the breakdown as a numbered list. Per story: **title**, **priority** with its
 reason, **blocked by**, and **what it delivers** end to end. Then ask four questions:
@@ -114,7 +108,7 @@ reason, **blocked by**, and **what it delivers** end to end. Then ask four quest
 
 Iterate until the user approves. Nothing reaches Linear before that.
 
-### 5. Publish
+## 5. Publish
 
 In dependency order — blockers first, so each `blockedBy` can reference a real identifier.
 
@@ -155,62 +149,14 @@ The end-to-end behaviour this story makes work, from the user's perspective. Not
 <link to the spec document>
 ```
 
-### 6. Link back
+## 6. Link back
 
 Patch the spec's `## Stories` section with the published issues —
 `mcp__linear__save_document` with `patch`, not a full rewrite. The link runs both ways:
 that section is how you tell at a glance whether the spec has shipped. **Change nothing
 else in the document.**
 
-## Pass 2 — tasks for one story
-
-Only on an explicit request naming a story. Never as a continuation of pass 1.
-
-A **task is one slice of a story, sized to roughly one PR** — which is also one branch and
-one Linear branch name, matching [`commit-and-pr`](../commit-and-pr/SKILL.md) and the
-repo's small-atomic-PR convention. If a task wouldn't survive its own review as a coherent
-change, it's two tasks.
-
-Give each task its **blocking edges** within the story — schema and contract before the
-endpoint, the endpoint before the UI that calls it — and a **priority**.
-
-**A task's priority is scoped to its story.** It ranks the task against its siblings and
-says which slice to pick up first; it says nothing about the board, and nobody compares it
-with a task of another story. What places the task on the board is the story's own
-priority. So:
-
-- **Rank the tasks against each other, not against the story.** Tasks of one story
-  routinely differ: `High` for the slice the others build on or the one carrying the
-  story's main uncertainty, `Medium` for the body of the story, `Low` for what can land
-  last and be cut with the story still demoable. The table is `TRACKING.md` § Priority.
-- **Never copy the story's priority down** as a default. A `High` story whose five tasks
-  are all `High` has told the implementer nothing about where to start.
-- **A blocker is never ranked below the sibling it blocks.**
-- **Priority orders what the edges leave free.** A hard dependency is a blocked-by
-  relation; priority decides between the tasks that could start now.
-
-Same discipline as pass 1: draft, quiz the user on granularity, edges and priorities, then
-publish in dependency order so each `blockedBy` can reference a real identifier.
-
-```
-mcp__linear__save_issue
-  team:      <tracker.team>
-  parentId:  <the story>
-  project:   <the story's project>
-  state:     <tracker.states.backlog>
-  priority:  <1–4, within the story, as approved>
-  labels:    [<tracker.typeLabels.task>, "<tracker.areaLabelPrefix>…"]
-  blockedBy: [<sibling tasks that must land first, already created>]
-```
-
-Sub-issues inherit nothing automatically — set the project, the priority and the area
-labels the task actually touches.
-
-**Leave the story's own priority alone.** Slicing a story is not a reason to re-rank it; if
-the slicing showed the story is bigger or riskier than its priority suggests, say so and
-let the user move it.
-
-## Rules that hold across both passes
+## Rules for every story
 
 - **No file paths or code snippets in issue bodies.** They go stale before anyone reads
   them. The one exception is a snippet that encodes a decision more precisely than prose

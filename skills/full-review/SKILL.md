@@ -67,6 +67,17 @@ git diff <resolved target> > "$RUN/diff.patch"
 git diff --stat <resolved target> | tee "$RUN/changed-paths.txt"
 ```
 
+**When the target includes the working tree, add the untracked files** — `git diff` never
+shows them, so a new file nobody has staged would go unreviewed:
+
+```bash
+git ls-files --others --exclude-standard | tee -a "$RUN/changed-paths.txt" |
+  while IFS= read -r f; do git diff --no-index -- /dev/null "$f"; done >> "$RUN/diff.patch"
+```
+
+Read-only: it leaves the index alone. `git diff --no-index` exits 1 when it finds a
+difference, which is every file here; that is not a failure.
+
 Pinning the diff to a file is what makes every lane review the same thing even if the
 working tree moves mid-review.
 
@@ -111,6 +122,9 @@ plugin-qualified one such as `klein-sdlc:basic-reviewer` where the manifest says
 start with no memory of this conversation, so each prompt needs to be self-contained:
 
 - **State the exact target** resolved in step 1.
+- **Name the ticket, when the caller gave one** (`deliver-ticket` does: its work is still
+  uncommitted on the base branch, so no branch name carries the id). A lane that checks the
+  change against its ticket reads it from there; the rest ignore it.
 - **Name the lane's catalogue path**, so the agent does not have to find its own manifest
   entry.
 - **Give the three paths** — `$RUN/diff.patch`, `$RUN/lint.txt`, `$RUN/typecheck.txt` — with

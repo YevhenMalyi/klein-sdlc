@@ -12,6 +12,21 @@ the agent stops if it cannot find it.
 | :------ | :--- | :----------------------------------------- |
 | `<app>` | `<n>`| One line: who uses it and what they expect |
 
+## Starting the app
+
+How anything that drives the app reuses a running instance or starts one. Whatever starts
+a server stops only that one, and never one it found running.
+
+- **Health check.** A request that tells *this* app apart from whatever else holds the port
+  (`GET http://localhost:<port>/<path>` answering `<body>`). A port that answers anything
+  else is not ours.
+- **Launch command.** The one command that starts the app for QA, run in the background,
+  and how it reports where it listens — a fixed port, or the line it prints when it picks
+  one.
+- **Ready when.** How long it takes and what to wait for before driving it.
+
+Leave this section out and they will only drive an app that is already up.
+
 ## Signing in
 
 How to reach each role locally without the real identity provider: the route and its
