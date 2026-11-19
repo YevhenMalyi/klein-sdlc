@@ -319,6 +319,105 @@
           "description": "Takes one open PR to merged. Default klein-sdlc:babysitter."
         }
       }
+    },
+    "delivery": {
+      "type": "object",
+      "description": "How deliver-ticket sizes a ticket before planning it, and what each profile runs. Optional; every key falls back to the default its description gives.",
+      "additionalProperties": false,
+      "properties": {
+        "$comment": {
+          "type": "string"
+        },
+        "sizes": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Upper limits per profile, in files and changed lines. A ticket larger than m is l.",
+          "properties": {
+            "s": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "maxFiles": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "maxLines": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "description": "Default 3 files, 80 lines."
+            },
+            "m": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "maxFiles": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "maxLines": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "description": "Default 15 files, 400 lines — commit-and-pr's review budget."
+            }
+          }
+        },
+        "riskPaths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Path prefixes. A ticket expected to touch one runs as m at least, however small."
+        },
+        "models": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Profile -> role -> model for each spawn. Default: s's developer on sonnet, every other role on its agent's own model.",
+          "properties": {
+            "s": {
+              "$ref": "#/$defs/modelsByRole"
+            },
+            "m": {
+              "$ref": "#/$defs/modelsByRole"
+            },
+            "l": {
+              "$ref": "#/$defs/modelsByRole"
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "model": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A model the Agent tool accepts (haiku, sonnet, opus, fable). Left out, the role runs on its agent's own model."
+    },
+    "modelsByRole": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "architect": {
+          "$ref": "#/$defs/model"
+        },
+        "planReviewer": {
+          "$ref": "#/$defs/model"
+        },
+        "developer": {
+          "$ref": "#/$defs/model"
+        },
+        "qa": {
+          "$ref": "#/$defs/model"
+        },
+        "babysitter": {
+          "$ref": "#/$defs/model"
+        }
+      }
     }
   }
 }

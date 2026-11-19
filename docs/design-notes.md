@@ -400,6 +400,29 @@ check it out again in the worktree; `commit-and-pr` and `babysit` therefore work
 `origin/<base>` there, each in its own § In a worktree, rather than `deliver-ticket`
 passing them a workaround.
 
+### Sizing a ticket before the plan
+
+The full team is nine or more agents whatever the ticket, and on a one-file fix most of
+them buy nothing. The orchestrator therefore sizes the ticket in phase 0 and picks a
+profile: `s` drops the architect and the plan review and has one developer build from a
+brief, and verifies only blocking review findings; `m` keeps one plan review round; `l`
+is the full run. Gates, review lanes, QA and the babysitter run under every profile —
+they are where a wrong estimate gets caught.
+
+The estimate is made once, before the plan, because that is the only point where it can
+save the architect. Re-sizing after the plan was rejected: the plan's file list is a
+better measure, but by then the most expensive part of a small run has already been paid
+for. The estimate is rough by design, so two floors keep it from cheapening the wrong
+ticket: a path in `delivery.riskPaths` and a criterion that leaves a decision open both
+force `m` at least. An `s` build that ends up larger than `s` widens its review to `m`'s
+rather than stopping. A large ticket proceeds as before; splitting it is the user's call,
+not the run's. The limits and the model per role and profile are in the manifest, because
+what counts as small differs by host.
+
+`implement-ticket`'s pointer used to stand in for this: "for a small ticket, use
+implement-ticket". It had no criteria and no point in the run where it was checked, and
+it ended before the PR, so a user who wanted a merged PR paid for the full team anyway.
+
 ## Decide mode, and what it must leave behind
 
 `--decide` lets a run take its own recommendations instead of waiting, in `write-spec`,

@@ -1,0 +1,5 @@
+{
+  "name": "klein-sdlc",
+  "description": "Eval-only wrapper around klein-sdlc: the same skills and agents, plus a declared `linear` server so evals can mock it. Never installed.",
+  "version": "0.0.0-eval"
+}

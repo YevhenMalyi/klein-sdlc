@@ -110,6 +110,9 @@ Optional, because the plugin carries a working default:
   `architect`, `planReviewer`, `developer`, `qa`, `babysitter`. Each role left out runs the
   plugin's generic agent; copy that agent into `.claude/agents/` and name it here to
   narrow it to the host.
+- **How `deliver-ticket` sizes a ticket**, under `delivery` in the manifest — the file and
+  line limits of the `s` and `m` profiles, the `riskPaths` that never run as `s`, and the
+  model each role runs on per profile. Without it, the defaults in the schema apply.
 
 **Nothing the plugin needs lives in the host's tracker.** The tracker holds specs, stories,
 tasks and bugs — the work. How that work is tracked is `TRACKING.md`, and why the plugin is
