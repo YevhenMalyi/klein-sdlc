@@ -312,6 +312,16 @@ Branches are cut from the local base branch, so `git fetch origin <forge.baseBra
 before Phase 2 — a stale local base silently bases the branch on old content, and the PR then carries a
 diff nobody asked for.
 
+### In a worktree
+
+When `forge.baseBranch` is checked out in another worktree (`git worktree list` shows it),
+git refuses to check it out here. Work from the remote ref instead, with the same effect:
+after the Phase 2 fetch, every "switch to base" or "return to base" is
+`git checkout --detach origin/<forge.baseBranch>`, and each branch is cut with
+`git checkout -b <branch-name> origin/<forge.baseBranch>`. Uncommitted work for later
+branches carries across a detached checkout exactly as it does across a branch one. Never
+touch the other worktree to free the base branch.
+
 ### Mixed concerns surfaced mid-execution
 
 If a file turns out to have changed for two unrelated reasons, **stop and ask the user**

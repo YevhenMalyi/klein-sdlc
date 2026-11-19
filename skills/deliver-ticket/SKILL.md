@@ -51,8 +51,14 @@ verifier is always `klein-sdlc:finding-verifier`.
 | `--no-stops`       | both                                                                                                |
 | `--decide`         | every stop that waits on a decision, and implies `--no-stops` — see § Decide mode                   |
 
+And one flag that skips nothing:
+
+| Flag         | Does                                                                                         |
+| ------------ | -------------------------------------------------------------------------------------------- |
+| `--worktree` | runs the whole ticket in one git worktree of its own, leaving the main checkout untouched — see § Worktree mode |
+
 Plain words count as the flags: "don't stop", "run it through without asking me", "decide
-for yourself" is `--decide`.
+for yourself" is `--decide`; "in a worktree", "don't touch my checkout" is `--worktree`.
 
 ## When the run stops
 
@@ -67,7 +73,7 @@ The one place the stop conditions live; the phases point here. ✋ stops, ▶ go
 | A developer blocked by a gap in the plan (phase 4) | ✋ | ✋ | ▶ the architect amends the plan, once per gap; a second block on it ✋ |
 | A finding that the change disagrees with the ticket or spec (phase 7) | ✋ | ✋ | ▶ the spec's reading; where it is silent, the narrower one — never wider scope |
 | The babysitter's decision stops (phase 10) | ✋ | ✋ | ▶ as `babysit` § Decide mode says |
-| A dirty tree, an open blocker, someone else assigned, a branch already named for the ticket, an expired login, an app that cannot start, a human `CHANGES_REQUESTED` | ✋ | ✋ | ✋ |
+| A dirty tree, an open blocker, someone else assigned, a branch already named for the ticket, an expired login, an app that cannot start, a QA port already served from another checkout (`--worktree`), a human `CHANGES_REQUESTED` | ✋ | ✋ | ✋ |
 | A failure left after its cap: a gate, a `(blocking)` finding, a QA defect, red CI, a babysitter short of merging | ✋ | ✋ | ✋ |
 | A developer blocked for any other reason; a file changed outside its unit's ownership; a review finding no unit owns | ✋ | ✋ | ✋ |
 
@@ -97,8 +103,9 @@ final message to the user (phase 10). Nothing taken under `--decide` is left onl
 ## Hard rules
 
 - **Never discard uncommitted work.** Not at the start, not between phases.
-- **No worktrees, no branch before phase 9.** Developers share the one checkout on
-  `forge.baseBranch`; `commit-and-pr` branches when it commits.
+- **One checkout per run, no branch before phase 9.** Developers share it: the main
+  checkout on `forge.baseBranch`, or under `--worktree` the run's own worktree. Never a
+  worktree per developer. `commit-and-pr` cuts the PR branches when it commits.
 - **One dev server, for QA only,** started the way `docs.qa` § Starting the app says.
   Phase 8 may start it; nothing else does, and it stops only a server it started.
 - **Only the agents this skill names.** No extra review types, QA passes or verification
@@ -117,11 +124,38 @@ RUN=$(mktemp -d)   # or a folder in the session scratchpad
 Never inside the repository. It holds `plan.md`, `plan-review-<n>.md`, the gate outputs and
 `report.md`, the running log you show the user at each stop.
 
+## Worktree mode (`--worktree`)
+
+The run gets one worktree, and every phase works in it; the main checkout is never read
+for state, switched or pulled, so the user can keep working there and a second run can go
+in parallel. Differences from the default, by phase:
+
+- **Phase 0, step 1** becomes: a branch already named for this ticket → ask, as usual;
+  then `git fetch origin <forge.baseBranch>` and create the worktree with `EnterWorktree`,
+  named `<tracker.issuePrefix>-NN` lowercased (its scratch branch starts at
+  `origin/<forge.baseBranch>` and never receives a commit). The main checkout's dirty
+  state does not stop the run — that is what the flag is for. Then prepare it as a fresh
+  clone would be: copy in each git-ignored env file the main checkout holds at the same
+  relative path (`.env`, never `.env.example`, which is tracked), and install dependencies
+  with the lockfile's package manager in its frozen mode. A failed install stops the run.
+- **Every agent prompt** names the worktree's absolute path and says to work only there.
+- **Phase 8**: a server already answering the QA health check is serving another
+  checkout's code, so it is never reused — stop and ask the user to free the ports
+  (§ When the run stops), then start this run's server from the worktree.
+- **Phases 9 and 10**: tell `commit-and-pr` and the babysitter they are in a worktree;
+  each skill's § In a worktree covers the base branch being checked out elsewhere.
+- **The end.** After the last merge, `ExitWorktree` with `remove` — the env files and
+  dependencies are git-ignored, so nothing of value is lost; anything else uncommitted
+  there stops the removal, and you ask. A run that stops before the last merge keeps the
+  worktree: give its path in your final message. The main checkout's `forge.baseBranch` is
+  now behind the remote; say so rather than pulling it.
+
 ## 0 — Start
 
-1. `git status`. Dirty: stop and ask. Clean: `git checkout <forge.baseBranch>`,
-   `git pull origin <forge.baseBranch>`. A branch already named for this ticket: ask
-   whether to resume there or start fresh.
+1. Under `--worktree`, § Worktree mode replaces this step. Otherwise: `git status`. Dirty:
+   stop and ask. Clean: `git checkout <forge.baseBranch>`, `git pull origin
+   <forge.baseBranch>`. A branch already named for this ticket: ask whether to resume
+   there or start fresh.
 2. Fetch the ticket with `includeRelations: true`; normalise the id to
    `<tracker.issuePrefix>-NN`. An open blocker: stop and say which.
 3. Move it to `tracker.states.inProgress` and assign it to `"me"`, exactly as
