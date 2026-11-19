@@ -159,7 +159,7 @@ Three tiers, cheapest first. `npm install` once for the two free ones.
 | :--- | :--- | :--- | :--- |
 | Scripts and schema | `npm test` and `npm run test:schema` | The board scripts fail loudly without a manifest or a key; every manifest we ship validates against `schema/sdlc.schema.json` | free |
 | Trigger | `npm run eval:trigger` | Each skill fires on a natural prompt for it, no other skill steals the prompt, and three non-workflow prompts fire nothing. One run per case, no baseline arm | about $1 |
-| Scenario | `npm run eval:scenario` | `full-review` on a fixture host with two planted defects: the lane the fixture's manifest declares (`klein-sdlc:basic-reviewer`, since an eval loads nothing from the fixture's `.claude/agents/`) and the verifier are spawned by name, both defects are reported as `(blocking)`, and the report accounts for verification | about $1–2 |
+| Scenario | `npm run eval:scenario` | `full-review` on a fixture host with three planted defects, one in a new untracked file: the lane the fixture's manifest declares (`klein-sdlc:basic-reviewer`, since an eval loads nothing from the fixture's `.claude/agents/`) and the verifier are spawned by name, all three defects are reported as `(blocking)`, and the report accounts for verification | about $1–2 |
 
 Cases live under `evals/`, one directory each: `prompt.md` plus `graders/`, and for the
 scenario a `case.yaml`, a `scaffold.sh` that builds the fixture repo in the run directory,
