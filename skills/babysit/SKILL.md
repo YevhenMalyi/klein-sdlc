@@ -186,6 +186,18 @@ squash commit keeps GitHub's default title, the PR title with `(#<n>)`. `--delet
 removes the remote and local branch and checks out the base branch; finish with
 `git pull --ff-only origin <forge.baseBranch>`.
 
+**In a worktree** — when `forge.baseBranch` is checked out in another worktree (`git
+worktree list` shows it), `--delete-branch` fails trying to check it out here. Merge
+without it, then clean up from the remote ref, and leave the other worktree alone:
+
+```bash
+gh pr merge <n> --squash --match-head-commit <headRefOid>
+git fetch origin <forge.baseBranch>
+git checkout --detach origin/<forge.baseBranch>
+git branch -D <headRefName>
+git push origin --delete <headRefName>   # "remote ref does not exist" means the forge already did
+```
+
 ## 6 — Ticket
 
 With a ticket, look at the PR body's closing line — the forge keyword, no colon. `Refs <ticket>` means the PR is one of

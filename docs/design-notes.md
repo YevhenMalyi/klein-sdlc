@@ -385,8 +385,20 @@ same reasoning keeps `babysit`'s CI watch, failed logs and comment fetches filte
 what it acts on.
 
 Rejected: a Workflow script (deterministic, but it runs in the background, which makes the
-approval stops awkward, and it costs more); developers in worktrees (isolation bought with
-a merge-back); fully autonomous by default (a plan or a commit the user has not seen).
+approval stops awkward, and it costs more); a worktree per developer (isolation bought with
+a merge-back, and the gates mean nothing until it happens); fully autonomous by default (a
+plan or a commit the user has not seen).
+
+`--worktree` is the other kind: one worktree for the whole run, every agent in it, so the
+ownership check and the gates work exactly as in the main checkout and nothing merges
+back. What it buys is the main checkout — the user keeps working there, and two runs can
+go at once. It is a flag, not the default, because it costs a dependency install and an
+env-file copy per run, and because QA's dev server binds the same ports whichever checkout
+it serves: a server already up belongs to another checkout, so the run stops rather than
+QA-ing the wrong code. With the base branch checked out in the main checkout, git will not
+check it out again in the worktree; `commit-and-pr` and `babysit` therefore work from
+`origin/<base>` there, each in its own § In a worktree, rather than `deliver-ticket`
+passing them a workaround.
 
 ## Decide mode, and what it must leave behind
 
