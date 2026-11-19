@@ -1,0 +1,9 @@
+# Copied in by sync.sh before every run.
+/skills/
+/agents/
+/docs/
+/templates/
+/scripts/
+/REVIEW.md
+/TRACKING.md
+evals/results/

@@ -163,7 +163,9 @@ single-pass, and biased against the finding).
 
 **Which findings.** Every `(blocking)` finding, always. Verify the advisory ones too while
 the whole set fits in ten spawns; past that, verify the blocking ones and say in the report
-how many advisory findings went unverified.
+how many advisory findings went unverified. A caller that asks for blocking-only
+verification (`deliver-ticket` does for a small ticket) gets the same: blocking verified,
+advisory reported as the lanes wrote them, with the unverified count.
 
 | Verdict           | What you do with it                                                   |
 | ----------------- | ----------------------------------------------------------------------- |
